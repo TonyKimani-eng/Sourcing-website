@@ -27,6 +27,10 @@ const config: Config = {
           400: "#f5c85f",
           500: "#d9a92d",
           600: "#b88419"
+        },
+        ember: {
+          500: "#ff4a1c",
+          600: "#e63a12"
         }
       },
       boxShadow: {

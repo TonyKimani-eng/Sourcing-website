@@ -13,6 +13,11 @@ export const siteContent = {
     logo: "/teekay-logo.png"
   },
   nav: ["How It Works", "Services", "Pricing", "Warehouses", "FAQ"],
+  topBar: {
+    location: "China warehouses serving Kenya importers",
+    help: "Need help? Chat online",
+    email: "Teekay Sourcing & Shipping"
+  },
   hero: {
     eyebrow: "China to Kenya sourcing and freight",
     headline: "Ship Goods from China to Kenya - Fast, Affordable & Reliable",
@@ -28,6 +33,11 @@ export const siteContent = {
     { label: "Air Freight", value: "13 USD per kg" },
     { label: "Sea Freight", value: "58k KES per CBM" },
     { label: "Sourcing Fee", value: "5k KES" }
+  ],
+  highlights: [
+    "Supplier checks",
+    "Air & sea shipping",
+    "Cargo consolidation"
   ],
   howItWorks: [
     {

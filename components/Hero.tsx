@@ -64,13 +64,6 @@ export function Hero() {
       </Container>
       <Container className="pb-14 pt-10 sm:pb-20 lg:pb-24 lg:pt-20">
         <div className="relative min-h-[520px] lg:min-h-[560px]">
-          <Image
-            src={brand.logo}
-            alt=""
-            width={520}
-            height={520}
-            className="pointer-events-none absolute -right-20 top-12 hidden w-[360px] rounded-full opacity-[0.08] mix-blend-screen lg:block"
-          />
           <div className="max-w-3xl pt-4 sm:pt-10 lg:pt-16">
             <p className="inline-flex max-w-full border-l-4 border-ember-500 bg-white/10 px-4 py-2 text-xs font-black uppercase leading-5 text-gold-400 backdrop-blur sm:text-sm">
               {hero.eyebrow}

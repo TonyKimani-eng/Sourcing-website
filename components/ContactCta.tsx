@@ -7,19 +7,19 @@ export function ContactCta() {
 
   return (
     <section id="contact" className="bg-[#f7fbff] px-4 py-16 sm:py-24">
-      <Container className="rounded-lg bg-navy-950 px-6 py-12 text-center text-white shadow-soft sm:px-10 lg:py-16">
+      <Container className="rounded-lg border border-gold-400/30 bg-white px-6 py-12 text-center text-navy-950 shadow-soft sm:px-10 lg:py-16">
         <p className="text-sm font-black uppercase text-gold-400">Contact</p>
         <h2 className="mx-auto mt-4 max-w-3xl text-4xl font-black sm:text-5xl">
           {finalCta.headline}
         </h2>
-        <p className="mx-auto mt-5 max-w-2xl text-lg leading-8 text-white/[0.72]">{finalCta.description}</p>
+        <p className="mx-auto mt-5 max-w-2xl text-lg leading-8 text-slate-600">{finalCta.description}</p>
         <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
-          <ButtonLink href={brand.whatsappUrl} variant="gold">
+          <ButtonLink href={brand.whatsappUrl} variant="primary">
             {finalCta.button}
           </ButtonLink>
-          <a href={`tel:${brand.phone}`} className="text-lg font-black text-white hover:text-gold-400">
-            {brand.phone}
-          </a>
+          <div className="inline-flex min-h-12 items-center justify-center rounded-full border border-gold-400 bg-white px-6 text-sm font-extrabold text-navy-950 shadow-soft">
+            {finalCta.wechatButton}: {brand.wechat}
+          </div>
         </div>
       </Container>
     </section>

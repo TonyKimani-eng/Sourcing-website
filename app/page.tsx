@@ -6,6 +6,7 @@ import { HowItWorks } from "@/components/HowItWorks";
 import { Pricing } from "@/components/Pricing";
 import { Services } from "@/components/Services";
 import { WhyChooseUs } from "@/components/WhyChooseUs";
+import { WarehouseAddresses } from "@/components/WarehouseAddresses";
 
 export default function Home() {
   return (
@@ -15,6 +16,7 @@ export default function Home() {
       <Services />
       <WhyChooseUs />
       <Pricing />
+      <WarehouseAddresses />
       <Faq />
       <ContactCta />
       <FloatingWhatsApp />

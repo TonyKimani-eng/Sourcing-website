@@ -4,7 +4,7 @@ import { siteContent } from "@/data/site";
 
 export function Pricing() {
   return (
-    <section id="pricing" className="bg-[#f7fbff] py-16 sm:py-24">
+    <section id="pricing" className="bg-[#f8fbff] py-16 sm:py-24">
       <Container>
         <SectionHeader
           eyebrow="Pricing"
@@ -14,13 +14,14 @@ export function Pricing() {
         <div className="grid gap-5 lg:grid-cols-3">
           {siteContent.pricing.map((item) => (
             <article
-              className={`rounded-lg p-7 shadow-soft ring-1 ${
+              className={`relative overflow-hidden rounded-lg p-7 shadow-soft ring-1 ${
                 item.highlight
-                  ? "bg-navy-950 text-white ring-navy-900"
-                  : "bg-white text-navy-950 ring-slate-100"
+                  ? "bg-navy-950 text-white ring-gold-400/40"
+                  : "bg-white text-navy-950 ring-slate-200"
               }`}
               key={item.title}
             >
+              <div className={`absolute inset-x-0 top-0 h-1 ${item.highlight ? "bg-gold-400" : "bg-teal-500"}`} />
               <p className={`text-sm font-black uppercase ${item.highlight ? "text-gold-400" : "text-teal-600"}`}>
                 {item.title}
               </p>

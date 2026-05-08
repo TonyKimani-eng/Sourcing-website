@@ -8,16 +8,19 @@ export const siteContent = {
     name: "Teekay Sourcing & Shipping",
     shortName: "Teekay",
     phone: "+254719241166",
-    whatsappUrl: "https://wa.me/254719241166"
+    whatsappUrl: "https://wa.me/254719241166",
+    wechat: "tkcsu9933",
+    logo: "/teekay-logo.png"
   },
-  nav: ["How It Works", "Services", "Pricing", "FAQ"],
+  nav: ["How It Works", "Services", "Pricing", "Warehouses", "FAQ"],
   hero: {
     eyebrow: "China to Kenya sourcing and freight",
     headline: "Ship Goods from China to Kenya - Fast, Affordable & Reliable",
     subheadline:
       "We help individuals and businesses source products from China and deliver safely to Kenya by air or sea.",
     primaryCta: "Get Free Consultation",
-    secondaryCta: "Chat on WhatsApp"
+    secondaryCta: "Chat on WhatsApp",
+    wechatCta: "Contact on WeChat"
   },
   stats: [
     { label: "By Air", value: "7 days" },
@@ -95,6 +98,19 @@ export const siteContent = {
       description: "Supplier search, product verification, quote support, and order coordination."
     }
   ],
+  warehouses: [
+    {
+      title: "By Sea Warehouse",
+      contact: "Wei Mr. (Owen) 18565545390",
+      address: "佛山市里水镇洲村大管家仓储园K126 仓",
+      navigation: "佛山大管家仓储园"
+    },
+    {
+      title: "By Air Warehouse",
+      contact: "Lisa 15913003394",
+      address: "广州市越秀区童心路6号B262房号"
+    }
+  ],
   faqs: [
     {
       question: "How long does shipping from China to Kenya take?",
@@ -126,6 +142,13 @@ export const siteContent = {
     headline: "Ready to Import from China?",
     description:
       "Talk to Teekay Sourcing & Shipping today for a clear quote, sourcing guidance, and reliable delivery to Kenya.",
-    button: "Chat on WhatsApp"
+    button: "WhatsApp",
+    wechatButton: "WeChat"
+  },
+  chat: {
+    title: "Customer Service Online",
+    status: "Available for sourcing, rates, and shipment updates",
+    whatsappLabel: "WhatsApp",
+    wechatLabel: "WeChat"
   }
 };

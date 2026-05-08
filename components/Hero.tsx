@@ -1,28 +1,35 @@
 import { siteContent } from "@/data/site";
-import { ButtonLink } from "@/components/ButtonLink";
 import { Container } from "@/components/Container";
 import { HeroVisual } from "@/components/HeroVisual";
+import Image from "next/image";
 
 export function Hero() {
   const { brand, hero, nav, stats } = siteContent;
 
   return (
-    <section className="relative isolate overflow-hidden bg-navy-950 text-white">
-      <div className="absolute inset-0 -z-10 bg-[linear-gradient(135deg,#031426_0%,#0a2d55_48%,#0b857e_100%)]" />
-      <div className="absolute inset-x-0 bottom-0 -z-10 h-28 bg-gradient-to-t from-[#f7fbff] to-transparent" />
+    <section className="relative isolate overflow-hidden bg-[#f8fbff] text-navy-950">
+      <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_12%_12%,rgba(217,169,45,0.22),transparent_24rem),radial-gradient(circle_at_84%_18%,rgba(17,169,157,0.16),transparent_26rem),linear-gradient(180deg,#ffffff_0%,#f8fbff_62%,#edf6fa_100%)]" />
+      <div className="absolute left-0 top-0 -z-10 h-2 w-full bg-[linear-gradient(90deg,#061f3d,#0b857e,#d9a92d)]" />
+      <div className="absolute -left-24 top-20 -z-10 h-72 w-72 rounded-full border-[42px] border-navy-950/[0.04]" />
+      <div className="absolute -right-28 bottom-20 -z-10 h-96 w-96 rounded-full border-[56px] border-gold-400/[0.10]" />
       <Container className="py-5">
         <header className="flex items-center justify-between gap-5">
-          <a href="#" className="flex items-center gap-3">
-            <span className="flex h-11 w-11 items-center justify-center rounded-lg bg-gold-400 text-base font-black text-navy-950">
-              TK
-            </span>
-            <span className="text-sm font-black sm:text-base">{brand.name}</span>
+          <a href="#" className="flex items-center gap-3 rounded-full border border-slate-200 bg-white/95 px-3 py-2 shadow-soft backdrop-blur">
+            <Image
+              src={brand.logo}
+              alt={`${brand.name} logo`}
+              width={48}
+              height={48}
+              className="h-12 w-12 rounded-full object-contain"
+              priority
+            />
+            <span className="text-sm font-black text-navy-950 sm:text-base">{brand.name}</span>
           </a>
-          <nav className="hidden items-center gap-7 text-sm font-semibold text-white/80 lg:flex">
+          <nav className="hidden items-center gap-7 rounded-full border border-slate-200 bg-white/90 px-6 py-3 text-sm font-semibold text-navy-900 shadow-soft backdrop-blur lg:flex">
             {nav.map((item) => (
               <a
                 href={`#${item.toLowerCase().replaceAll(" ", "-")}`}
-                className="transition hover:text-white"
+                className="transition hover:text-teal-600"
                 key={item}
               >
                 {item}
@@ -31,43 +38,36 @@ export function Hero() {
           </nav>
           <a
             href={brand.whatsappUrl}
-            className="hidden rounded-full border border-white/20 px-4 py-2 text-sm font-bold text-white transition hover:bg-white/10 sm:inline-flex"
+            className="hidden rounded-full border border-gold-400 bg-navy-950 px-5 py-3 text-sm font-bold text-white shadow-soft transition hover:bg-navy-800 sm:inline-flex"
           >
-            {brand.phone}
+            WhatsApp
           </a>
         </header>
       </Container>
-      <Container className="pb-16 pt-10 sm:pb-20 lg:pb-28 lg:pt-16">
-        <div className="grid items-center gap-12 lg:grid-cols-[1.02fr_0.98fr]">
+      <Container className="pb-16 pt-10 sm:pb-20 lg:pb-24 lg:pt-16">
+        <div className="grid items-center gap-12 lg:grid-cols-[0.98fr_1.02fr]">
           <div>
-            <p className="inline-flex rounded-full border border-white/15 bg-white/10 px-4 py-2 text-sm font-bold text-gold-400">
+            <p className="inline-flex rounded-full border border-gold-400/50 bg-white px-4 py-2 text-sm font-black text-navy-950 shadow-soft">
               {hero.eyebrow}
             </p>
-            <h1 className="mt-6 max-w-4xl text-4xl font-black leading-[1.05] sm:text-6xl lg:text-7xl">
+            <h1 className="mt-6 max-w-4xl text-4xl font-black leading-[1.04] text-navy-950 sm:text-6xl lg:text-7xl">
               {hero.headline}
             </h1>
-            <p className="mt-6 max-w-2xl text-lg leading-8 text-white/[0.78] sm:text-xl">
+            <p className="mt-6 max-w-2xl text-lg font-medium leading-8 text-slate-700 sm:text-xl">
               {hero.subheadline}
             </p>
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <ButtonLink href="#contact" variant="gold">
-                {hero.primaryCta}
-              </ButtonLink>
-              <ButtonLink href={brand.whatsappUrl} variant="secondary">
-                {hero.secondaryCta}
-              </ButtonLink>
-            </div>
           </div>
           <HeroVisual />
         </div>
         <div className="mt-12 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
           {stats.map((stat) => (
             <div
-              className="rounded-lg border border-white/15 bg-white/10 p-5 shadow-soft backdrop-blur"
+              className="relative overflow-hidden rounded-lg border border-slate-200 bg-white p-5 shadow-soft"
               key={stat.label}
             >
-              <p className="text-sm font-bold text-white/[0.62]">{stat.label}</p>
-              <p className="mt-2 text-2xl font-black text-white">{stat.value}</p>
+              <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-gold-400 via-teal-500 to-navy-950" />
+              <p className="text-sm font-bold text-slate-500">{stat.label}</p>
+              <p className="mt-2 text-2xl font-black text-navy-950">{stat.value}</p>
             </div>
           ))}
         </div>

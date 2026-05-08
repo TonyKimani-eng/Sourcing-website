@@ -1,0 +1,47 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background: #f7fbff;
+  color: #102033;
+}
+
+::selection {
+  background: #f5c85f;
+  color: #061f3d;
+}
+
+.route-dash {
+  stroke-dasharray: 10 12;
+  animation: route-flow 18s linear infinite;
+}
+
+@keyframes route-flow {
+  to {
+    stroke-dashoffset: -260;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .route-dash {
+    animation: none;
+  }
+}

@@ -19,7 +19,7 @@ export function Hero() {
       <div className="absolute inset-0 -z-10 bg-[linear-gradient(90deg,rgba(2,11,20,0.96)_0%,rgba(3,20,38,0.88)_38%,rgba(3,20,38,0.52)_66%,rgba(3,20,38,0.28)_100%)]" />
       <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_18%_22%,rgba(255,74,28,0.16),transparent_28rem),radial-gradient(circle_at_78%_30%,rgba(245,200,95,0.10),transparent_30rem)]" />
       <div className="absolute inset-x-0 bottom-0 -z-10 h-36 bg-gradient-to-t from-[#f8fbff] to-transparent" />
-      <Container className="py-0">
+      <Container className="pt-3">
         <header className="flex items-stretch justify-between gap-0">
           <a href="#" className="flex min-h-14 min-w-0 flex-1 items-center gap-3 bg-white px-3 shadow-soft sm:min-h-20 sm:flex-none sm:px-6 sm:pr-12 sm:[clip-path:polygon(0_0,92%_0,100%_100%,0%_100%)]">
             <Image

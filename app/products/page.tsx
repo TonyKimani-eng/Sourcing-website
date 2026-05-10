@@ -155,31 +155,19 @@ export default function ProductsPage() {
         </Container>
       </section>
 
-      <section className="relative overflow-hidden bg-navy-950 py-10 text-white sm:py-12">
+      <section className="relative overflow-hidden bg-navy-950 py-6 text-white sm:py-8">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_10%,rgba(255,74,28,0.18),transparent_24rem),radial-gradient(circle_at_86%_30%,rgba(17,169,157,0.18),transparent_28rem)]" />
         <Container>
-          <div className="relative grid gap-6 lg:grid-cols-[1fr_0.78fr] lg:items-end">
-            <div className="max-w-3xl">
-              <p className="inline-flex border-l-4 border-ember-500 bg-white/10 px-4 py-2 text-xs font-black uppercase leading-5 text-gold-400">
+          <div className="relative max-w-4xl">
+              <p className="inline-flex border-l-4 border-ember-500 bg-white/10 px-3 py-1.5 text-[11px] font-black uppercase leading-5 text-gold-400 sm:text-xs">
                 {products.eyebrow}
               </p>
-              <h1 className="mt-5 text-3xl font-black leading-tight sm:text-5xl">
+              <h1 className="mt-3 text-2xl font-black leading-tight sm:text-4xl">
                 Supplier-backed product catalog
               </h1>
-              <p className="mt-4 max-w-2xl leading-7 text-white/72">
+              <p className="mt-2 max-w-3xl text-sm font-medium leading-6 text-white/72 sm:text-base sm:leading-7">
                 Browse products Teekay can source through known suppliers, then ask for current stock, storage, colors, samples, and shipping guidance.
               </p>
-            </div>
-            <div className="grid gap-3 rounded-lg border border-white/10 bg-white/10 p-4 shadow-soft backdrop-blur sm:grid-cols-2">
-              {products.process.map((step, index) => (
-                <div className="flex gap-3 rounded-lg bg-white p-3 text-navy-950" key={step}>
-                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-ember-500 text-xs font-black text-white">
-                    {index + 1}
-                  </span>
-                  <p className="text-sm font-bold leading-6">{step}</p>
-                </div>
-              ))}
-            </div>
           </div>
         </Container>
       </section>
@@ -200,9 +188,9 @@ export default function ProductsPage() {
         </Container>
       </section>
 
-      <section id="iphones" className="scroll-mt-24 bg-[#f8fbff] py-10 sm:py-14">
+      <section id="iphones" className="scroll-mt-24 bg-[#f8fbff] py-8 sm:py-12">
         <Container>
-          <div className="mb-7 flex flex-col gap-2 border-l-4 border-ember-500 pl-4 sm:flex-row sm:items-end sm:justify-between">
+          <div className="mb-5 flex flex-col gap-2 border-l-4 border-ember-500 pl-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <p className="text-sm font-black uppercase text-ember-500">iPhones</p>
               <h2 className="mt-1 text-2xl font-black text-navy-950 sm:text-3xl">

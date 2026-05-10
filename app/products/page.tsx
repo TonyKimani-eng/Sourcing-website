@@ -78,16 +78,18 @@ function PhoneMockup({ color }: { color: keyof typeof phoneStyles }) {
   const style = phoneStyles[color];
 
   return (
-    <div className="relative flex h-56 items-center justify-center rounded-lg bg-[#f7f7f9]">
+    <div className="relative flex h-60 items-center justify-center overflow-hidden rounded-lg bg-navy-950">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(255,74,28,0.18),transparent_16rem),radial-gradient(circle_at_82%_78%,rgba(245,200,95,0.16),transparent_18rem)]" />
       <div className="absolute left-4 top-4 z-20 grid gap-1">
-        <span className="rounded bg-[#ed1c2e] px-3 py-1 text-sm font-bold leading-none text-white">
+        <span className="rounded bg-ember-500 px-3 py-1 text-sm font-bold leading-none text-white">
           OFFER
         </span>
-        <span className="rounded bg-[#0067b9] px-4 py-1 text-sm font-bold leading-none text-white">
+        <span className="rounded bg-teal-500 px-4 py-1 text-sm font-bold leading-none text-white">
           HOT
         </span>
       </div>
-      <div className={`relative -mr-3 h-36 w-20 rounded-[1.35rem] bg-gradient-to-br ${style.body} shadow-xl ring-2 ring-black/15`}>
+      <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-[#020b14] to-transparent" />
+      <div className={`relative -mr-3 h-36 w-20 rounded-[1.35rem] bg-gradient-to-br ${style.body} shadow-xl ring-2 ring-white/20`}>
         <div className="absolute left-3 top-3 flex gap-1.5">
           <span className="h-3.5 w-3.5 rounded-full bg-black/45 ring-1 ring-white/20" />
           <span className="h-3.5 w-3.5 rounded-full bg-black/35 ring-1 ring-white/20" />
@@ -111,7 +113,7 @@ export default function ProductsPage() {
 
   return (
     <main className="min-h-screen bg-[#f8fbff] text-navy-950">
-      <section className="sticky top-0 z-40 border-b border-slate-200 bg-white/95 shadow-soft backdrop-blur">
+      <section className="sticky top-0 z-40 border-b border-white/10 bg-navy-950/95 text-white shadow-soft backdrop-blur">
         <Container className="py-0">
           <header className="flex min-h-16 items-center justify-between gap-4">
             <Link href="/" className="flex min-w-0 items-center gap-3">
@@ -123,15 +125,15 @@ export default function ProductsPage() {
                 className="h-10 w-10 shrink-0 rounded-full bg-white object-contain"
                 priority
               />
-              <span className="min-w-0 text-sm font-black leading-tight text-navy-950 sm:text-base">
-                Products
+              <span className="min-w-0 text-sm font-black leading-tight sm:text-base">
+                Teekay Products
               </span>
             </Link>
             <nav className="hidden flex-1 items-center justify-center gap-2 lg:flex">
               {products.categories.map((product) => (
                 <a
                   href={`#${product.title.toLowerCase().replaceAll(" ", "-")}`}
-                  className="inline-flex min-h-10 items-center rounded-full border border-slate-200 px-4 text-sm font-black text-navy-950 transition hover:border-ember-500 hover:text-ember-500"
+                  className="inline-flex min-h-10 items-center rounded-full border border-white/12 px-4 text-sm font-black text-white/82 transition hover:border-gold-400 hover:text-gold-400"
                   key={product.title}
                 >
                   {product.title}
@@ -139,7 +141,7 @@ export default function ProductsPage() {
               ))}
             </nav>
             <div className="flex shrink-0 items-center gap-2">
-              <Link href="/" className="hidden text-sm font-black text-slate-600 transition hover:text-ember-500 sm:inline">
+              <Link href="/" className="hidden text-sm font-black text-white/70 transition hover:text-gold-400 sm:inline">
                 Home
               </Link>
               <a
@@ -153,36 +155,54 @@ export default function ProductsPage() {
         </Container>
       </section>
 
-      <section className="border-b border-slate-200 bg-white py-8">
+      <section className="relative overflow-hidden bg-navy-950 py-10 text-white sm:py-12">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_10%,rgba(255,74,28,0.18),transparent_24rem),radial-gradient(circle_at_86%_30%,rgba(17,169,157,0.18),transparent_28rem)]" />
         <Container>
-          <div className="grid gap-5 lg:grid-cols-[1fr_0.8fr] lg:items-end">
-            <div>
-              <p className="text-sm font-black uppercase text-teal-600">{products.eyebrow}</p>
-              <h1 className="mt-2 max-w-3xl text-3xl font-black leading-tight text-navy-950">
-                Product Catalog
+          <div className="relative grid gap-6 lg:grid-cols-[1fr_0.78fr] lg:items-end">
+            <div className="max-w-3xl">
+              <p className="inline-flex border-l-4 border-ember-500 bg-white/10 px-4 py-2 text-xs font-black uppercase leading-5 text-gold-400">
+                {products.eyebrow}
+              </p>
+              <h1 className="mt-5 text-3xl font-black leading-tight sm:text-5xl">
+                Supplier-backed product catalog
               </h1>
-              <p className="mt-3 max-w-3xl leading-7 text-slate-600">
-                Choose a category below. iPhones are listed first with offer-style product cards for quick browsing.
+              <p className="mt-4 max-w-2xl leading-7 text-white/72">
+                Browse products Teekay can source through known suppliers, then ask for current stock, storage, colors, samples, and shipping guidance.
               </p>
             </div>
-            <div className="flex gap-2 overflow-x-auto pb-1">
-              {products.categories.map((product) => (
-                <a
-                  href={`#${product.title.toLowerCase().replaceAll(" ", "-")}`}
-                  className="inline-flex min-h-10 shrink-0 items-center rounded-full border border-slate-200 bg-[#f8fbff] px-4 text-sm font-black text-navy-950"
-                  key={product.title}
-                >
-                  {product.title}
-                </a>
+            <div className="grid gap-3 rounded-lg border border-white/10 bg-white/10 p-4 shadow-soft backdrop-blur sm:grid-cols-2">
+              {products.process.map((step, index) => (
+                <div className="flex gap-3 rounded-lg bg-white p-3 text-navy-950" key={step}>
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-ember-500 text-xs font-black text-white">
+                    {index + 1}
+                  </span>
+                  <p className="text-sm font-bold leading-6">{step}</p>
+                </div>
               ))}
             </div>
           </div>
         </Container>
       </section>
 
-      <section id="iphones" className="scroll-mt-24 bg-white py-8 sm:py-10">
+      <section className="border-b border-slate-200 bg-white py-4">
         <Container>
-          <div className="mb-6 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+          <div className="flex gap-2 overflow-x-auto pb-1">
+              {products.categories.map((product) => (
+                <a
+                  href={`#${product.title.toLowerCase().replaceAll(" ", "-")}`}
+                  className="inline-flex min-h-11 shrink-0 items-center rounded-full border border-slate-200 bg-[#f8fbff] px-5 text-sm font-black text-navy-950 transition hover:border-ember-500 hover:bg-ember-500 hover:text-white"
+                  key={product.title}
+                >
+                  {product.title}
+                </a>
+              ))}
+          </div>
+        </Container>
+      </section>
+
+      <section id="iphones" className="scroll-mt-24 bg-[#f8fbff] py-10 sm:py-14">
+        <Container>
+          <div className="mb-7 flex flex-col gap-2 border-l-4 border-ember-500 pl-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <p className="text-sm font-black uppercase text-ember-500">iPhones</p>
               <h2 className="mt-1 text-2xl font-black text-navy-950 sm:text-3xl">
@@ -193,20 +213,20 @@ export default function ProductsPage() {
               Prices are guide ranges and can change by storage, condition, supplier stock, and exchange rate.
             </p>
           </div>
-          <div className="grid gap-x-7 gap-y-12 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5">
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5">
             {products.iphoneProducts.map((product) => (
-              <article className="group min-w-0" key={product.name}>
+              <article className="group min-w-0 overflow-hidden rounded-lg border border-slate-100 bg-white shadow-soft transition hover:-translate-y-1 hover:border-ember-500/30" key={product.name}>
                 <PhoneMockup color={product.color as keyof typeof phoneStyles} />
-                <div className="mt-5 px-1">
-                  <h3 className="text-xl font-black leading-tight text-black">{product.name}</h3>
-                  <p className="mt-3 text-base text-slate-500">{product.brand}</p>
-                  <p className="mt-2 text-2xl font-black leading-tight text-[#ed1c2e]">
+                <div className="p-5">
+                  <p className="text-xs font-black uppercase text-teal-600">{product.brand}</p>
+                  <h3 className="mt-2 text-xl font-black leading-tight text-navy-950">{product.name}</h3>
+                  <p className="mt-3 text-2xl font-black leading-tight text-ember-500">
                     {product.price}
                   </p>
-                  <p className="text-lg leading-tight text-slate-400 line-through">{product.oldPrice}</p>
+                  <p className="text-base font-semibold leading-tight text-slate-400 line-through">{product.oldPrice}</p>
                   <a
                     href={`${brand.whatsappUrl}?text=Hello%20Teekay%2C%20I%20want%20to%20source%20${encodeURIComponent(product.name)}.`}
-                    className="mt-4 inline-flex min-h-10 items-center rounded-full bg-navy-950 px-4 text-sm font-black text-white opacity-0 transition group-hover:bg-ember-500 group-hover:opacity-100 focus:opacity-100"
+                    className="mt-5 inline-flex min-h-10 w-full items-center justify-center rounded-full bg-navy-950 px-4 text-sm font-black text-white transition hover:bg-ember-500"
                   >
                     Ask supplier
                   </a>
@@ -217,21 +237,36 @@ export default function ProductsPage() {
         </Container>
       </section>
 
-      <section className="py-10 sm:py-14">
+      <section className="bg-white py-10 sm:py-14">
         <Container>
+          <div className="mb-7 border-l-4 border-teal-500 pl-4">
+            <p className="text-sm font-black uppercase text-teal-600">More categories</p>
+            <h2 className="mt-1 text-2xl font-black text-navy-950 sm:text-3xl">
+              Other supplier-ready products
+            </h2>
+          </div>
           <div className="grid gap-5 md:grid-cols-3">
             {products.categories.slice(1).map((product) => (
               <article
                 id={product.title.toLowerCase().replaceAll(" ", "-")}
-                className="scroll-mt-24 rounded-lg border border-slate-100 bg-white p-6 shadow-soft"
+                className="relative scroll-mt-24 overflow-hidden rounded-lg border border-slate-100 bg-[#fbfdff] p-6 shadow-soft transition hover:-translate-y-1 hover:border-teal-500/30"
                 key={product.title}
               >
+                <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-teal-500 to-gold-400" />
                 <p className="text-sm font-black uppercase text-teal-600">{product.tag}</p>
                 <h2 className="mt-3 text-2xl font-black text-navy-950">{product.title}</h2>
                 <p className="mt-3 leading-7 text-slate-600">{product.description}</p>
+                <div className="mt-5 grid gap-2">
+                  {product.items.map((item) => (
+                    <div className="flex items-center gap-3" key={item}>
+                      <span className="h-2.5 w-2.5 rounded-full bg-ember-500" />
+                      <span className="text-sm font-bold text-navy-950">{item}</span>
+                    </div>
+                  ))}
+                </div>
                 <a
                   href={`${brand.whatsappUrl}?text=Hello%20Teekay%2C%20I%20want%20to%20source%20${encodeURIComponent(product.title)}.`}
-                  className="mt-5 inline-flex min-h-11 items-center rounded-full bg-ember-500 px-5 text-sm font-black text-white transition hover:bg-navy-950"
+                  className="mt-6 inline-flex min-h-11 items-center rounded-full bg-ember-500 px-5 text-sm font-black text-white transition hover:bg-navy-950"
                 >
                   Ask about {product.title}
                 </a>

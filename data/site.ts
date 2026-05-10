@@ -125,6 +125,92 @@ export const siteContent = {
       "We confirm supplier availability and product details.",
       "You receive a clear quote before purchase and shipping.",
       "We ship to Kenya and notify you for pick-up."
+    ],
+    iphoneProducts: [
+      {
+        name: "Apple iPhone XR",
+        brand: "Apple",
+        price: "KSh 22,000 - KSh 38,000",
+        oldPrice: "KSh 45,000",
+        color: "graphite"
+      },
+      {
+        name: "Apple iPhone 11",
+        brand: "Apple",
+        price: "KSh 28,000 - KSh 48,000",
+        oldPrice: "KSh 58,000",
+        color: "purple"
+      },
+      {
+        name: "Apple iPhone 12",
+        brand: "Apple",
+        price: "KSh 36,000 - KSh 65,000",
+        oldPrice: "KSh 75,000",
+        color: "blue"
+      },
+      {
+        name: "Apple iPhone 13",
+        brand: "Apple",
+        price: "KSh 48,000 - KSh 82,000",
+        oldPrice: "KSh 95,000",
+        color: "green"
+      },
+      {
+        name: "Apple iPhone 14",
+        brand: "Apple",
+        price: "KSh 62,000 - KSh 105,000",
+        oldPrice: "KSh 118,000",
+        color: "white"
+      },
+      {
+        name: "Apple iPhone 15",
+        brand: "Apple",
+        price: "KSh 78,000 - KSh 128,000",
+        oldPrice: "KSh 145,000",
+        color: "pink"
+      },
+      {
+        name: "Apple iPhone 16",
+        brand: "Apple",
+        price: "KSh 92,000 - KSh 155,000",
+        oldPrice: "KSh 178,000",
+        color: "teal"
+      },
+      {
+        name: "Apple iPhone 17e",
+        brand: "Apple",
+        price: "KSh 96,000",
+        oldPrice: "KSh 107,000",
+        color: "black"
+      },
+      {
+        name: "Apple iPhone 17",
+        brand: "Apple",
+        price: "KSh 110,000 - KSh 152,000",
+        oldPrice: "KSh 168,000",
+        color: "sky"
+      },
+      {
+        name: "Apple iPhone 17 Air",
+        brand: "Apple",
+        price: "KSh 118,000 - KSh 185,000",
+        oldPrice: "KSh 205,000",
+        color: "silver"
+      },
+      {
+        name: "Apple iPhone 17 Pro",
+        brand: "Apple",
+        price: "KSh 166,000 - KSh 245,000",
+        oldPrice: "KSh 270,000",
+        color: "navy"
+      },
+      {
+        name: "Apple iPhone 17 Pro Max",
+        brand: "Apple",
+        price: "KSh 180,000 - KSh 312,000",
+        oldPrice: "KSh 340,000",
+        color: "copper"
+      }
     ]
   },
   reasons: [

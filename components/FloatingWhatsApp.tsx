@@ -4,7 +4,7 @@ export function FloatingWhatsApp() {
   const { brand, chat } = siteContent;
 
   return (
-    <div className="fixed bottom-3 left-3 right-3 z-50 rounded-lg border border-gold-400/50 bg-white p-2 shadow-2xl sm:left-auto sm:right-4 sm:w-[238px] sm:p-2.5">
+    <div className="fixed bottom-4 right-4 z-50 w-[168px] rounded-lg border border-gold-400/50 bg-white p-2 shadow-2xl sm:w-[238px] sm:p-2.5">
       <div className="hidden items-center gap-2 sm:flex">
         <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-navy-950 text-[10px] font-black text-gold-400">
           LIVE

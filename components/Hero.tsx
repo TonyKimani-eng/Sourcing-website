@@ -30,16 +30,16 @@ export function Hero() {
       </div>
       <Container className="py-0">
         <header className="flex items-stretch justify-between gap-0">
-          <a href="#" className="flex min-h-16 min-w-0 flex-1 items-center gap-3 bg-white px-3 shadow-soft sm:min-h-20 sm:flex-none sm:px-6 sm:pr-12 sm:[clip-path:polygon(0_0,92%_0,100%_100%,0%_100%)]">
+          <a href="#" className="flex min-h-14 min-w-0 flex-1 items-center gap-3 bg-white px-3 shadow-soft sm:min-h-20 sm:flex-none sm:px-6 sm:pr-12 sm:[clip-path:polygon(0_0,92%_0,100%_100%,0%_100%)]">
             <Image
               src={assetPath(brand.logo)}
               alt={`${brand.name} logo`}
               width={48}
               height={48}
-              className="h-11 w-11 shrink-0 rounded-full object-contain sm:h-12 sm:w-12"
+              className="h-10 w-10 shrink-0 rounded-full object-contain sm:h-12 sm:w-12"
               priority
             />
-            <span className="min-w-0 text-sm font-black leading-tight text-navy-950 sm:text-base">
+            <span className="min-w-0 text-xs font-black leading-tight text-navy-950 sm:text-base">
               {brand.name}
             </span>
           </a>
@@ -56,19 +56,30 @@ export function Hero() {
           </nav>
           <a
             href={brand.whatsappUrl}
-            className="inline-flex min-h-16 shrink-0 items-center bg-ember-500 px-4 text-xs font-black text-white transition hover:bg-gold-400 hover:text-navy-950 sm:min-h-20 sm:bg-white sm:px-6 sm:text-sm sm:text-navy-950"
+            className="inline-flex min-h-14 shrink-0 items-center bg-ember-500 px-4 text-xs font-black text-white transition hover:bg-gold-400 hover:text-navy-950 sm:min-h-20 sm:bg-white sm:px-6 sm:text-sm sm:text-navy-950"
           >
             WhatsApp
           </a>
         </header>
+        <nav className="-mx-4 flex gap-2 overflow-x-auto border-t border-white/10 bg-ember-500 px-4 py-3 text-sm font-black text-white shadow-soft lg:hidden">
+          {nav.map((item) => (
+            <a
+              href={item === "Products" ? routePath("/products") : `#${item.toLowerCase().replaceAll(" ", "-")}`}
+              className="inline-flex min-h-10 shrink-0 items-center rounded-full bg-white/12 px-4 transition hover:bg-gold-400 hover:text-navy-950"
+              key={item}
+            >
+              {item}
+            </a>
+          ))}
+        </nav>
       </Container>
-      <Container className="pb-14 pt-10 sm:pb-20 lg:pb-24 lg:pt-20">
-        <div className="relative min-h-[520px] lg:min-h-[560px]">
-          <div className="max-w-3xl pt-4 sm:pt-10 lg:pt-16">
-            <p className="inline-flex max-w-full border-l-4 border-ember-500 bg-white/10 px-4 py-2 text-xs font-black uppercase leading-5 text-gold-400 backdrop-blur sm:text-sm">
+      <Container className="pb-24 pt-8 sm:pb-20 lg:pb-24 lg:pt-20">
+        <div className="relative min-h-[430px] sm:min-h-[520px] lg:min-h-[560px]">
+          <div className="max-w-3xl pt-3 sm:pt-10 lg:pt-16">
+            <p className="inline-flex max-w-full border-l-4 border-ember-500 bg-white/10 px-4 py-2 text-[11px] font-black uppercase leading-5 text-gold-400 backdrop-blur sm:text-sm">
               {hero.eyebrow}
             </p>
-            <h1 className="mt-6 max-w-4xl text-[2.35rem] font-black leading-[1.04] text-white sm:text-6xl lg:text-7xl">
+            <h1 className="mt-5 max-w-4xl text-[2.15rem] font-black leading-[1.04] text-white sm:mt-6 sm:text-6xl lg:text-7xl">
               {hero.headline}
             </h1>
             <p className="mt-5 max-w-2xl text-base font-medium leading-7 text-white/[0.78] sm:mt-6 sm:text-xl sm:leading-8">

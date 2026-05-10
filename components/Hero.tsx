@@ -4,7 +4,7 @@ import { assetPath, routePath } from "@/data/paths";
 import Image from "next/image";
 
 export function Hero() {
-  const { brand, hero, nav, stats, topBar, highlights } = siteContent;
+  const { brand, hero, nav, stats, highlights } = siteContent;
 
   return (
     <section className="relative isolate overflow-hidden bg-navy-950 text-white">
@@ -19,15 +19,6 @@ export function Hero() {
       <div className="absolute inset-0 -z-10 bg-[linear-gradient(90deg,rgba(2,11,20,0.96)_0%,rgba(3,20,38,0.88)_38%,rgba(3,20,38,0.52)_66%,rgba(3,20,38,0.28)_100%)]" />
       <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_18%_22%,rgba(255,74,28,0.16),transparent_28rem),radial-gradient(circle_at_78%_30%,rgba(245,200,95,0.10),transparent_30rem)]" />
       <div className="absolute inset-x-0 bottom-0 -z-10 h-36 bg-gradient-to-t from-[#f8fbff] to-transparent" />
-      <div className="border-b border-white/10 bg-[#020b14]/95">
-        <Container className="flex flex-col gap-2 py-3 text-[11px] font-bold leading-5 text-white/72 sm:flex-row sm:items-center sm:justify-between sm:text-xs">
-          <span className="max-w-full">{topBar.location}</span>
-          <div className="flex flex-wrap gap-x-4 gap-y-1">
-            <span>{topBar.help}</span>
-            <span className="hidden md:inline">{topBar.email}</span>
-          </div>
-        </Container>
-      </div>
       <Container className="py-0">
         <header className="flex items-stretch justify-between gap-0">
           <a href="#" className="flex min-h-14 min-w-0 flex-1 items-center gap-3 bg-white px-3 shadow-soft sm:min-h-20 sm:flex-none sm:px-6 sm:pr-12 sm:[clip-path:polygon(0_0,92%_0,100%_100%,0%_100%)]">

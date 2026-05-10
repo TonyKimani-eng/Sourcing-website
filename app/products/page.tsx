@@ -165,9 +165,6 @@ export default function ProductsPage() {
               <h1 className="mt-3 text-2xl font-black leading-tight sm:text-4xl">
                 Supplier-backed product catalog
               </h1>
-              <p className="mt-2 max-w-3xl text-sm font-medium leading-6 text-white/72 sm:text-base sm:leading-7">
-                Browse products Teekay can source through known suppliers, then ask for current stock, storage, colors, samples, and shipping guidance.
-              </p>
           </div>
         </Container>
       </section>

@@ -12,7 +12,7 @@ export const siteContent = {
     wechat: "tkcsu9933",
     logo: "/teekay-logo.png"
   },
-  nav: ["How It Works", "Services", "Pricing", "Warehouses", "FAQ"],
+  nav: ["Products", "How It Works", "Services", "Pricing", "Warehouses", "FAQ"],
   topBar: {
     location: "China warehouses serving Kenya importers",
     help: "Need help? Chat online",
@@ -79,6 +79,56 @@ export const siteContent = {
       icon: "CC"
     }
   ],
+  products: {
+    eyebrow: "Trusted supplier categories",
+    headline: "Products we can source with suppliers we already know",
+    description:
+      "Start with categories where Teekay has existing supplier relationships, then request current models, colors, sizes, and wholesale options.",
+    categories: [
+      {
+        title: "iPhones",
+        tag: "Phones and accessories",
+        description:
+          "Supplier support for iPhone models, checks on condition, storage, variants, and package details before shipping.",
+        accent: "teal",
+        initials: "IP",
+        items: ["New and used options", "Model and storage checks", "Accessory bundling"]
+      },
+      {
+        title: "Watches",
+        tag: "Smart and fashion watches",
+        description:
+          "Source wearable stock for personal orders, retail displays, gifting, or small business inventory.",
+        accent: "gold",
+        initials: "WT",
+        items: ["Smartwatch options", "Style comparisons", "Packaging checks"]
+      },
+      {
+        title: "T-Shirts",
+        tag: "Plain and custom apparel",
+        description:
+          "Work with apparel suppliers for plain tees, branded batches, size runs, and sample checks.",
+        accent: "ember",
+        initials: "TS",
+        items: ["Size and color runs", "Custom print support", "Sample coordination"]
+      },
+      {
+        title: "Caps",
+        tag: "Casual and branded caps",
+        description:
+          "Source caps for teams, shops, events, and brands with options for embroidery or printed designs.",
+        accent: "navy",
+        initials: "CP",
+        items: ["Bulk order options", "Logo placement checks", "Color matching"]
+      }
+    ],
+    process: [
+      "Tell us the product category and quantity.",
+      "We confirm supplier availability and product details.",
+      "You receive a clear quote before purchase and shipping.",
+      "We ship to Kenya and notify you for pick-up."
+    ]
+  },
   reasons: [
     "Reliable China sourcing partner",
     "Affordable rates",

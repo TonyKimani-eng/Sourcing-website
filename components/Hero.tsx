@@ -46,7 +46,7 @@ export function Hero() {
           <nav className="hidden flex-1 items-center justify-center gap-7 bg-ember-500 px-6 text-sm font-black text-white shadow-soft lg:flex">
             {nav.map((item) => (
               <a
-                href={`#${item.toLowerCase().replaceAll(" ", "-")}`}
+                href={item === "Products" ? "/products" : `#${item.toLowerCase().replaceAll(" ", "-")}`}
                 className="transition hover:text-navy-950"
                 key={item}
               >

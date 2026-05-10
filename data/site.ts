@@ -121,6 +121,12 @@ export const siteContent = {
       address: "广州市越秀区童心路6号B262房号"
     }
   ],
+  kenyaPickup: {
+    title: "Nairobi Pick-Up Point",
+    contact: "Karis: +254 706 282762 | Anita: +254 708 422 243",
+    address:
+      "Imperial Chambers Building, Moi Avenue (Behind Nation Center, Ngoma Lane), Nairobi. Shop A8."
+  },
   faqs: [
     {
       question: "How long does shipping from China to Kenya take?",

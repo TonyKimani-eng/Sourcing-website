@@ -38,7 +38,14 @@ const config: Config = {
         glow: "0 20px 70px rgba(17, 169, 157, 0.28)"
       },
       fontFamily: {
-        sans: ["var(--font-inter)", "ui-sans-serif", "system-ui", "sans-serif"]
+        sans: [
+          "ui-sans-serif",
+          "system-ui",
+          "-apple-system",
+          "BlinkMacSystemFont",
+          "Segoe UI",
+          "sans-serif"
+        ]
       }
     }
   },

@@ -38,75 +38,74 @@ export default function ProductsPage() {
 
   return (
     <main className="min-h-screen bg-[#f8fbff] text-navy-950">
-      <section className="relative isolate overflow-hidden bg-navy-950 text-white">
-        <Image
-          src="/hero-logistics-bg.png"
-          alt=""
-          fill
-          priority
-          sizes="100vw"
-          className="absolute inset-0 -z-20 object-cover object-[64%_center]"
-        />
-        <div className="absolute inset-0 -z-10 bg-[linear-gradient(90deg,rgba(2,11,20,0.97)_0%,rgba(3,20,38,0.90)_48%,rgba(3,20,38,0.56)_100%)]" />
+      <section className="sticky top-0 z-40 border-b border-slate-200 bg-white/95 shadow-soft backdrop-blur">
         <Container className="py-0">
-          <header className="flex min-h-20 items-center justify-between gap-4">
+          <header className="flex min-h-16 items-center justify-between gap-4">
             <Link href="/" className="flex min-w-0 items-center gap-3">
               <Image
                 src={brand.logo}
                 alt={`${brand.name} logo`}
                 width={48}
                 height={48}
-                className="h-11 w-11 shrink-0 rounded-full bg-white object-contain"
+                className="h-10 w-10 shrink-0 rounded-full bg-white object-contain"
                 priority
               />
-              <span className="min-w-0 text-sm font-black leading-tight sm:text-base">
-                {brand.name}
+              <span className="min-w-0 text-sm font-black leading-tight text-navy-950 sm:text-base">
+                Products
               </span>
             </Link>
-            <div className="flex items-center gap-2">
-              <Link
-                href="/"
-                className="hidden min-h-11 items-center rounded-full border border-white/20 px-5 text-sm font-black text-white transition hover:bg-white/10 sm:inline-flex"
-              >
+            <nav className="hidden flex-1 items-center justify-center gap-2 lg:flex">
+              {products.categories.map((product) => (
+                <a
+                  href={`#${product.title.toLowerCase().replaceAll(" ", "-")}`}
+                  className="inline-flex min-h-10 items-center rounded-full border border-slate-200 px-4 text-sm font-black text-navy-950 transition hover:border-ember-500 hover:text-ember-500"
+                  key={product.title}
+                >
+                  {product.title}
+                </a>
+              ))}
+            </nav>
+            <div className="flex shrink-0 items-center gap-2">
+              <Link href="/" className="hidden text-sm font-black text-slate-600 transition hover:text-ember-500 sm:inline">
                 Home
               </Link>
               <a
                 href={brand.whatsappUrl}
-                className="inline-flex min-h-11 items-center rounded-full bg-gold-400 px-5 text-sm font-black text-navy-950 transition hover:bg-gold-500"
+                className="inline-flex min-h-10 items-center rounded-full bg-ember-500 px-4 text-sm font-black text-white transition hover:bg-gold-400 hover:text-navy-950"
               >
                 WhatsApp
               </a>
             </div>
           </header>
         </Container>
-        <Container className="pb-16 pt-12 sm:pb-24 sm:pt-16">
-          <div className="grid items-end gap-10 lg:grid-cols-[1fr_0.78fr]">
+      </section>
+
+      <section className="border-b border-slate-200 bg-white py-8">
+        <Container>
+          <div className="grid gap-5 lg:grid-cols-[1fr_0.95fr] lg:items-end">
             <div>
-              <p className="inline-flex border-l-4 border-ember-500 bg-white/10 px-4 py-2 text-xs font-black uppercase leading-5 text-gold-400 backdrop-blur sm:text-sm">
-                {products.eyebrow}
-              </p>
-              <h1 className="mt-6 max-w-4xl text-[2.6rem] font-black leading-[1.04] sm:text-6xl">
+              <p className="text-sm font-black uppercase text-teal-600">{products.eyebrow}</p>
+              <h1 className="mt-2 max-w-3xl text-3xl font-black leading-tight text-navy-950 sm:text-4xl">
                 {products.headline}
               </h1>
-              <p className="mt-5 max-w-2xl text-base font-medium leading-7 text-white/[0.78] sm:text-xl sm:leading-8">
-                {products.description}
-              </p>
+              <p className="mt-3 max-w-3xl leading-7 text-slate-600">{products.description}</p>
             </div>
-            <div className="grid gap-3 rounded-lg border border-white/10 bg-white/10 p-4 shadow-soft backdrop-blur">
-              {products.process.map((step, index) => (
-                <div className="flex gap-3 rounded-lg bg-white p-3 text-navy-950" key={step}>
-                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-ember-500 text-xs font-black text-white">
-                    {index + 1}
-                  </span>
-                  <p className="text-sm font-bold leading-6">{step}</p>
-                </div>
+            <div className="flex gap-2 overflow-x-auto pb-1 lg:hidden">
+              {products.categories.map((product) => (
+                <a
+                  href={`#${product.title.toLowerCase().replaceAll(" ", "-")}`}
+                  className="inline-flex min-h-10 shrink-0 items-center rounded-full border border-slate-200 bg-[#f8fbff] px-4 text-sm font-black text-navy-950"
+                  key={product.title}
+                >
+                  {product.title}
+                </a>
               ))}
             </div>
           </div>
         </Container>
       </section>
 
-      <section className="py-16 sm:py-24">
+      <section className="py-10 sm:py-14">
         <Container>
           <div className="grid gap-5 md:grid-cols-2">
             {products.categories.map((product) => {
@@ -114,6 +113,7 @@ export default function ProductsPage() {
 
               return (
                 <article
+                  id={product.title.toLowerCase().replaceAll(" ", "-")}
                   className="overflow-hidden rounded-lg border border-slate-100 bg-white shadow-soft"
                   key={product.title}
                 >

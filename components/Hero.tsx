@@ -23,7 +23,6 @@ export function Hero() {
           <span className="max-w-full">{topBar.location}</span>
           <div className="flex flex-wrap gap-x-4 gap-y-1">
             <span>{topBar.help}</span>
-            <span>WeChat: {brand.wechat}</span>
             <span className="hidden md:inline">{topBar.email}</span>
           </div>
         </Container>

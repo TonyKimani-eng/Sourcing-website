@@ -15,13 +15,10 @@ export function ContactCta() {
             {finalCta.headline}
           </h2>
           <p className="mx-auto mt-5 max-w-2xl text-base leading-7 text-white/[0.72] sm:text-lg sm:leading-8">{finalCta.description}</p>
-          <div className="mt-8 flex flex-col items-stretch justify-center gap-3 sm:flex-row sm:items-center sm:gap-4">
+          <div className="mt-8 flex justify-center">
             <ButtonLink href={brand.whatsappUrl} variant="primary" className="w-full sm:w-auto">
               {finalCta.button}
             </ButtonLink>
-            <div className="inline-flex min-h-12 w-full items-center justify-center rounded-full border border-gold-400 bg-white px-4 text-sm font-extrabold text-navy-950 shadow-soft sm:w-auto sm:px-6">
-              {finalCta.wechatButton}: {brand.wechat}
-            </div>
           </div>
         </div>
       </Container>

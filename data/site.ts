@@ -9,7 +9,6 @@ export const siteContent = {
     shortName: "Teekay",
     phone: "+254719241166",
     whatsappUrl: "https://wa.me/254719241166",
-    wechat: "tkcsu9933",
     logo: "/teekay-logo.png"
   },
   nav: ["Products", "How It Works", "Services", "Pricing", "Warehouses", "FAQ"],
@@ -24,8 +23,7 @@ export const siteContent = {
     subheadline:
       "We help individuals and businesses source products from China and deliver safely to Kenya by air or sea.",
     primaryCta: "Get Free Consultation",
-    secondaryCta: "Chat on WhatsApp",
-    wechatCta: "Contact on WeChat"
+    secondaryCta: "Chat on WhatsApp"
   },
   stats: [
     { label: "By Air", value: "7 days" },
@@ -208,13 +206,11 @@ export const siteContent = {
     headline: "Ready to Import from China?",
     description:
       "Talk to Teekay Sourcing & Shipping today for a clear quote, sourcing guidance, and reliable delivery to Kenya.",
-    button: "WhatsApp",
-    wechatButton: "WeChat"
+    button: "WhatsApp"
   },
   chat: {
     title: "Customer Service Online",
     status: "Available for sourcing, rates, and shipment updates",
-    whatsappLabel: "WhatsApp",
-    wechatLabel: "WeChat"
+    whatsappLabel: "WhatsApp"
   }
 };

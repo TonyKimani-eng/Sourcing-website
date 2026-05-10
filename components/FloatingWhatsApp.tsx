@@ -14,25 +14,15 @@ export function FloatingWhatsApp() {
           <p className="truncate text-[11px] font-semibold text-slate-500">Fast replies</p>
         </div>
       </div>
-      <div className="grid grid-cols-2 gap-1.5 sm:mt-2">
+      <div className="sm:mt-2">
         <a
           href={brand.whatsappUrl}
           aria-label="Chat with Teekay Sourcing and Shipping on WhatsApp"
-          className="inline-flex min-h-9 items-center justify-center rounded-full bg-teal-500 px-2 text-xs font-black text-white transition hover:bg-teal-600"
+          className="inline-flex min-h-9 w-full items-center justify-center rounded-full bg-teal-500 px-2 text-xs font-black text-white transition hover:bg-teal-600"
         >
           {chat.whatsappLabel}
         </a>
-        <a
-          href="#contact"
-          aria-label={`Contact Teekay on WeChat at ${brand.wechat}`}
-          className="inline-flex min-h-9 items-center justify-center rounded-full bg-navy-950 px-2 text-xs font-black text-gold-400 transition hover:bg-navy-800"
-        >
-          {chat.wechatLabel}
-        </a>
       </div>
-      <p className="mt-1.5 truncate text-center text-[11px] font-bold text-navy-950 sm:block">
-        WeChat ID: {brand.wechat}
-      </p>
     </div>
   );
 }

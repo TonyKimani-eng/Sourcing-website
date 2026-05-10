@@ -1,5 +1,6 @@
 import { siteContent } from "@/data/site";
 import { Container } from "@/components/Container";
+import { assetPath, routePath } from "@/data/paths";
 import Image from "next/image";
 
 export function Hero() {
@@ -8,7 +9,7 @@ export function Hero() {
   return (
     <section className="relative isolate overflow-hidden bg-navy-950 text-white">
       <Image
-        src="/hero-logistics-bg.png"
+        src={assetPath("/hero-logistics-bg.png")}
         alt=""
         fill
         priority
@@ -31,7 +32,7 @@ export function Hero() {
         <header className="flex items-stretch justify-between gap-0">
           <a href="#" className="flex min-h-16 min-w-0 flex-1 items-center gap-3 bg-white px-3 shadow-soft sm:min-h-20 sm:flex-none sm:px-6 sm:pr-12 sm:[clip-path:polygon(0_0,92%_0,100%_100%,0%_100%)]">
             <Image
-              src={brand.logo}
+              src={assetPath(brand.logo)}
               alt={`${brand.name} logo`}
               width={48}
               height={48}
@@ -45,7 +46,7 @@ export function Hero() {
           <nav className="hidden flex-1 items-center justify-center gap-7 bg-ember-500 px-6 text-sm font-black text-white shadow-soft lg:flex">
             {nav.map((item) => (
               <a
-                href={item === "Products" ? "/products" : `#${item.toLowerCase().replaceAll(" ", "-")}`}
+                href={item === "Products" ? routePath("/products") : `#${item.toLowerCase().replaceAll(" ", "-")}`}
                 className="transition hover:text-navy-950"
                 key={item}
               >

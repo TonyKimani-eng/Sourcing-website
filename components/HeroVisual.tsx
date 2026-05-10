@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { assetPath } from "@/data/paths";
 import { siteContent } from "@/data/site";
 
 export function HeroVisual() {
@@ -9,7 +10,7 @@ export function HeroVisual() {
       <div className="absolute inset-0 bg-[linear-gradient(145deg,rgba(255,74,28,0.18),transparent_34%),radial-gradient(circle_at_80%_10%,rgba(245,200,95,0.20),transparent_25rem)]" />
       <div className="absolute inset-x-0 top-0 h-2 bg-ember-500" />
       <Image
-        src={brand.logo}
+        src={assetPath(brand.logo)}
         alt={`${brand.name} China to Kenya shipping logo`}
         width={1100}
         height={1100}

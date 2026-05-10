@@ -4,6 +4,7 @@ const repositoryName = "Sourcing-website";
 
 const nextConfig = {
   output: "export",
+  trailingSlash: true,
   basePath: isGitHubPages ? `/${repositoryName}` : "",
   assetPrefix: isGitHubPages ? `/${repositoryName}/` : "",
   images: {

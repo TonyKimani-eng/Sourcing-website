@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { Container } from "@/components/Container";
+import { assetPath } from "@/data/paths";
 import { siteContent } from "@/data/site";
 
 export const metadata: Metadata = {
@@ -115,7 +116,7 @@ export default function ProductsPage() {
           <header className="flex min-h-16 items-center justify-between gap-4">
             <Link href="/" className="flex min-w-0 items-center gap-3">
               <Image
-                src={brand.logo}
+                src={assetPath(brand.logo)}
                 alt={`${brand.name} logo`}
                 width={48}
                 height={48}

@@ -11,7 +11,7 @@ export const siteContent = {
     whatsappUrl: "https://wa.me/254719241166",
     logo: "/teekay-logo.png"
   },
-  nav: ["Products", "How It Works", "Services", "Pricing", "Warehouses", "FAQ"],
+  nav: ["Products", "How It Works", "Services", "Pricing", "Cost Analyzer", "Warehouses", "FAQ"],
   topBar: {
     location: "China warehouses serving Kenya importers",
     help: "Need help? Chat online",

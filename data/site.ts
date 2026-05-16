@@ -246,8 +246,7 @@ export const siteContent = {
     {
       title: "By Sea Warehouse",
       contact: "Wei Mr. (Owen) 18565545390",
-      address: "佛山市里水镇洲村大管家仓储园K126 仓",
-      navigation: "佛山大管家仓储园"
+      address: "佛山市里水镇洲村大管家仓储园K126 仓"
     },
     {
       title: "By Air Warehouse",

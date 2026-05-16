@@ -25,12 +25,6 @@ export function WarehouseAddresses() {
                   <p className="text-sm font-bold text-slate-500">Address</p>
                   <p className="mt-1 break-words text-base font-black leading-7 sm:text-lg sm:leading-8">{warehouse.address}</p>
                 </div>
-                {warehouse.navigation ? (
-                  <div>
-                    <p className="text-sm font-bold text-slate-500">Navigation</p>
-                    <p className="mt-1 break-words text-base font-black leading-7 sm:text-lg sm:leading-8">{warehouse.navigation}</p>
-                  </div>
-                ) : null}
                 <div>
                   <p className="text-sm font-bold text-slate-500">Contact</p>
                   <p className="mt-1 break-words text-base font-black leading-7 sm:text-lg sm:leading-8">{warehouse.contact}</p>

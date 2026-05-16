@@ -239,7 +239,7 @@ export const siteContent = {
       title: "Sourcing Fee",
       price: "5k KES",
       unit: "per order",
-      description: "Supplier search, product verification, quote support, and order coordination."
+      description: "Supplier search, product verification, quote support, and order coordination. Deductible from your first order purchase."
     }
   ],
   warehouses: [

@@ -21,6 +21,7 @@ export function Pricing() {
         <div className="grid gap-5 lg:grid-cols-3">
           {siteContent.pricing.map((item) => (
             <article
+              id={item.title === "Sourcing Fee" ? "sourcing-fee" : undefined}
               className={`relative overflow-hidden rounded-lg p-7 shadow-soft ring-1 ${
                 item.highlight
                   ? "bg-navy-950 text-white ring-gold-400/40"

@@ -19,7 +19,20 @@ export function HowItWorks() {
                 {index + 1}
               </div>
               <h3 className="mt-6 text-xl font-black text-navy-950">{step.title}</h3>
-              <p className="mt-3 leading-7 text-slate-600">{step.description}</p>
+              {index === 1 ? (
+                <p className="mt-3 leading-7 text-slate-600">
+                  We source, verify the supplier, and prepare a clear quote. A{" "}
+                  <a
+                    href="#sourcing-fee"
+                    className="font-black text-teal-600 underline decoration-teal-500 decoration-2 underline-offset-4 transition hover:text-ember-500"
+                  >
+                    sourcing fee
+                  </a>{" "}
+                  applies for supplier search, product checks, and order coordination.
+                </p>
+              ) : (
+                <p className="mt-3 leading-7 text-slate-600">{step.description}</p>
+              )}
             </article>
           ))}
         </div>

@@ -36,6 +36,7 @@ jobs:
         run: npm run build
         env:
           GITHUB_PAGES: "true"
+          NEXT_PUBLIC_GA_MEASUREMENT_ID: "G-MBHVC43B7G"
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

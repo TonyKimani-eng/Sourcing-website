@@ -45,12 +45,6 @@ export function Hero() {
               </a>
             ))}
           </nav>
-          <a
-            href={brand.whatsappUrl}
-            className="inline-flex min-h-14 shrink-0 items-center bg-ember-500 px-4 text-xs font-black text-white transition hover:bg-gold-400 hover:text-navy-950 sm:min-h-20 sm:bg-white sm:px-6 sm:text-sm sm:text-navy-950"
-          >
-            WhatsApp
-          </a>
         </header>
         <nav className="-mx-4 flex gap-2 overflow-x-auto border-t border-white/10 bg-ember-500 px-4 py-3 text-sm font-black text-white shadow-soft lg:hidden">
           {nav.map((item) => (

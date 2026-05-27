@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { Container } from "@/components/Container";
+import { IphoneProductCard } from "@/components/IphoneProductCard";
 import { assetPath } from "@/data/paths";
 import { siteContent } from "@/data/site";
 
@@ -10,37 +11,6 @@ export const metadata: Metadata = {
   description:
     "Browse product categories Teekay can help source from trusted China suppliers, including iPhones, watches, t-shirts, and caps."
 };
-
-function ProductPhoto({ src, alt }: { src: string; alt: string }) {
-  return (
-    <div className="relative h-60 overflow-hidden rounded-lg bg-slate-100">
-      <Image
-        src={assetPath(src)}
-        alt={alt}
-        fill
-        sizes="(min-width: 1280px) 20vw, (min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw"
-        className="object-cover transition duration-300 group-hover:scale-105"
-      />
-      <div className="absolute inset-0 bg-gradient-to-t from-navy-950/35 via-transparent to-transparent" />
-      <div className="absolute left-4 top-4 z-20 grid gap-1">
-        <span className="rounded bg-ember-500 px-3 py-1 text-sm font-bold leading-none text-white">
-          OFFER
-        </span>
-        <span className="rounded bg-teal-500 px-4 py-1 text-sm font-bold leading-none text-white">
-          HOT
-        </span>
-      </div>
-    </div>
-  );
-}
-
-function formatKes(price: number) {
-  return `KSh ${Math.round(price).toLocaleString("en-KE")}`;
-}
-
-function formatStorage(storage: string) {
-  return storage.toUpperCase().endsWith("T") ? storage.toUpperCase() : `${storage}GB`;
-}
 
 export default function ProductsPage() {
   const { brand, products } = siteContent;
@@ -133,36 +103,9 @@ export default function ProductsPage() {
             </p>
           </div>
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5">
-            {products.iphoneProducts.map((product) => {
-              const startingPrice = Math.min(...product.storageOptions.map((option) => option.price));
-
-              return (
-                <article className="group min-w-0 overflow-hidden rounded-lg border border-slate-100 bg-white shadow-soft transition hover:-translate-y-1 hover:border-ember-500/30" key={product.name}>
-                  <ProductPhoto src={product.image} alt={`${product.name} product photo`} />
-                  <div className="p-5">
-                    <p className="text-xs font-black uppercase text-teal-600">{product.brand}</p>
-                    <h3 className="mt-2 text-xl font-black leading-tight text-navy-950">{product.name}</h3>
-                    <p className="mt-3 text-2xl font-black leading-tight text-ember-500">
-                      From {formatKes(startingPrice)}
-                    </p>
-                    <div className="mt-4 grid gap-2">
-                      {product.storageOptions.map((option) => (
-                        <div className="flex items-center justify-between gap-3 rounded bg-[#f8fbff] px-3 py-2" key={option.storage}>
-                          <span className="text-sm font-black text-navy-950">{formatStorage(option.storage)}</span>
-                          <span className="text-sm font-bold text-slate-600">{formatKes(option.price)}</span>
-                        </div>
-                      ))}
-                    </div>
-                    <a
-                      href={`${brand.whatsappUrl}?text=Hello%20Teekay%2C%20I%20want%20to%20source%20${encodeURIComponent(product.name)}.`}
-                      className="mt-5 inline-flex min-h-10 w-full items-center justify-center rounded-full bg-navy-950 px-4 text-sm font-black text-white transition hover:bg-ember-500"
-                    >
-                      Ask supplier
-                    </a>
-                  </div>
-                </article>
-              );
-            })}
+            {products.iphoneProducts.map((product) => (
+              <IphoneProductCard product={product} whatsappUrl={brand.whatsappUrl} key={product.name} />
+            ))}
           </div>
         </Container>
       </section>

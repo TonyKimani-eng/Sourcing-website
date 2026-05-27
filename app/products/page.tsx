@@ -91,16 +91,13 @@ export default function ProductsPage() {
 
       <section id="iphones" className="scroll-mt-24 bg-[#f8fbff] py-8 sm:py-12">
         <Container>
-          <div className="mb-5 flex flex-col gap-2 border-l-4 border-ember-500 pl-4 sm:flex-row sm:items-end sm:justify-between">
+          <div className="mb-5 border-l-4 border-ember-500 pl-4">
             <div>
               <p className="text-sm font-black uppercase text-ember-500">iPhones</p>
               <h2 className="mt-1 text-2xl font-black text-navy-950 sm:text-3xl">
                 Factory refurbished iPhones, 100% battery
               </h2>
             </div>
-            <p className="max-w-xl text-sm font-semibold leading-6 text-slate-500">
-              Prices are guide ranges and can change by storage, condition, supplier stock, and exchange rate.
-            </p>
           </div>
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5">
             {products.iphoneProducts.map((product) => (

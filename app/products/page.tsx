@@ -11,75 +11,17 @@ export const metadata: Metadata = {
     "Browse product categories Teekay can help source from trusted China suppliers, including iPhones, watches, t-shirts, and caps."
 };
 
-const phoneStyles = {
-  graphite: {
-    body: "from-slate-950 to-slate-700",
-    screen: "from-slate-900 via-violet-900 to-slate-950",
-    glow: "bg-violet-300"
-  },
-  purple: {
-    body: "from-violet-400 to-indigo-500",
-    screen: "from-indigo-950 via-blue-600 to-violet-300",
-    glow: "bg-blue-200"
-  },
-  blue: {
-    body: "from-sky-300 to-blue-500",
-    screen: "from-sky-100 via-blue-500 to-white",
-    glow: "bg-sky-200"
-  },
-  green: {
-    body: "from-emerald-300 to-teal-600",
-    screen: "from-emerald-950 via-teal-500 to-emerald-200",
-    glow: "bg-teal-100"
-  },
-  white: {
-    body: "from-white to-slate-200",
-    screen: "from-slate-100 via-white to-slate-300",
-    glow: "bg-white"
-  },
-  pink: {
-    body: "from-rose-100 to-pink-400",
-    screen: "from-slate-950 via-rose-800 to-amber-200",
-    glow: "bg-rose-200"
-  },
-  teal: {
-    body: "from-teal-200 to-teal-500",
-    screen: "from-teal-950 via-teal-500 to-cyan-200",
-    glow: "bg-cyan-100"
-  },
-  black: {
-    body: "from-neutral-950 to-neutral-700",
-    screen: "from-neutral-950 via-indigo-950 to-violet-500",
-    glow: "bg-fuchsia-200"
-  },
-  sky: {
-    body: "from-blue-100 to-sky-400",
-    screen: "from-white via-sky-300 to-blue-700",
-    glow: "bg-sky-100"
-  },
-  silver: {
-    body: "from-white to-zinc-300",
-    screen: "from-white via-zinc-200 to-zinc-500",
-    glow: "bg-white"
-  },
-  navy: {
-    body: "from-slate-900 to-blue-950",
-    screen: "from-black via-slate-900 to-blue-500",
-    glow: "bg-blue-200"
-  },
-  copper: {
-    body: "from-orange-300 to-orange-700",
-    screen: "from-black via-orange-950 to-orange-500",
-    glow: "bg-orange-200"
-  }
-};
-
-function PhoneMockup({ color }: { color: keyof typeof phoneStyles }) {
-  const style = phoneStyles[color];
-
+function ProductPhoto({ src, alt }: { src: string; alt: string }) {
   return (
-    <div className="relative flex h-60 items-center justify-center overflow-hidden rounded-lg bg-navy-950">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(255,74,28,0.18),transparent_16rem),radial-gradient(circle_at_82%_78%,rgba(245,200,95,0.16),transparent_18rem)]" />
+    <div className="relative h-60 overflow-hidden rounded-lg bg-slate-100">
+      <Image
+        src={assetPath(src)}
+        alt={alt}
+        fill
+        sizes="(min-width: 1280px) 20vw, (min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw"
+        className="object-cover transition duration-300 group-hover:scale-105"
+      />
+      <div className="absolute inset-0 bg-gradient-to-t from-navy-950/35 via-transparent to-transparent" />
       <div className="absolute left-4 top-4 z-20 grid gap-1">
         <span className="rounded bg-ember-500 px-3 py-1 text-sm font-bold leading-none text-white">
           OFFER
@@ -88,24 +30,16 @@ function PhoneMockup({ color }: { color: keyof typeof phoneStyles }) {
           HOT
         </span>
       </div>
-      <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-[#020b14] to-transparent" />
-      <div className={`relative -mr-3 h-36 w-20 rounded-[1.35rem] bg-gradient-to-br ${style.body} shadow-xl ring-2 ring-white/20`}>
-        <div className="absolute left-3 top-3 flex gap-1.5">
-          <span className="h-3.5 w-3.5 rounded-full bg-black/45 ring-1 ring-white/20" />
-          <span className="h-3.5 w-3.5 rounded-full bg-black/35 ring-1 ring-white/20" />
-        </div>
-        <div className="absolute inset-x-0 top-1/2 mx-auto h-7 w-7 -translate-y-1/2 rounded-full bg-white/10" />
-      </div>
-      <div className="relative h-40 w-24 rounded-[1.45rem] bg-black p-1 shadow-2xl ring-2 ring-black/20">
-        <div className={`relative h-full overflow-hidden rounded-[1.15rem] bg-gradient-to-br ${style.screen}`}>
-          <div className="absolute left-1/2 top-1.5 h-3 w-10 -translate-x-1/2 rounded-full bg-black" />
-          <div className={`absolute left-1/2 top-1/2 h-14 w-14 -translate-x-1/2 -translate-y-1/2 rounded-full ${style.glow} opacity-70 blur-md`} />
-          <div className="absolute inset-5 rounded-full border border-white/30" />
-          <div className="absolute bottom-4 right-3 h-16 w-7 rounded-full border border-white/20" />
-        </div>
-      </div>
     </div>
   );
+}
+
+function formatKes(price: number) {
+  return `KSh ${Math.round(price).toLocaleString("en-KE")}`;
+}
+
+function formatStorage(storage: string) {
+  return storage.toUpperCase().endsWith("T") ? storage.toUpperCase() : `${storage}GB`;
 }
 
 export default function ProductsPage() {
@@ -199,25 +133,36 @@ export default function ProductsPage() {
             </p>
           </div>
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5">
-            {products.iphoneProducts.map((product) => (
-              <article className="group min-w-0 overflow-hidden rounded-lg border border-slate-100 bg-white shadow-soft transition hover:-translate-y-1 hover:border-ember-500/30" key={product.name}>
-                <PhoneMockup color={product.color as keyof typeof phoneStyles} />
-                <div className="p-5">
-                  <p className="text-xs font-black uppercase text-teal-600">{product.brand}</p>
-                  <h3 className="mt-2 text-xl font-black leading-tight text-navy-950">{product.name}</h3>
-                  <p className="mt-3 text-2xl font-black leading-tight text-ember-500">
-                    {product.price}
-                  </p>
-                  <p className="text-base font-semibold leading-tight text-slate-400 line-through">{product.oldPrice}</p>
-                  <a
-                    href={`${brand.whatsappUrl}?text=Hello%20Teekay%2C%20I%20want%20to%20source%20${encodeURIComponent(product.name)}.`}
-                    className="mt-5 inline-flex min-h-10 w-full items-center justify-center rounded-full bg-navy-950 px-4 text-sm font-black text-white transition hover:bg-ember-500"
-                  >
-                    Ask supplier
-                  </a>
-                </div>
-              </article>
-            ))}
+            {products.iphoneProducts.map((product) => {
+              const startingPrice = Math.min(...product.storageOptions.map((option) => option.price));
+
+              return (
+                <article className="group min-w-0 overflow-hidden rounded-lg border border-slate-100 bg-white shadow-soft transition hover:-translate-y-1 hover:border-ember-500/30" key={product.name}>
+                  <ProductPhoto src={product.image} alt={`${product.name} product photo`} />
+                  <div className="p-5">
+                    <p className="text-xs font-black uppercase text-teal-600">{product.brand}</p>
+                    <h3 className="mt-2 text-xl font-black leading-tight text-navy-950">{product.name}</h3>
+                    <p className="mt-3 text-2xl font-black leading-tight text-ember-500">
+                      From {formatKes(startingPrice)}
+                    </p>
+                    <div className="mt-4 grid gap-2">
+                      {product.storageOptions.map((option) => (
+                        <div className="flex items-center justify-between gap-3 rounded bg-[#f8fbff] px-3 py-2" key={option.storage}>
+                          <span className="text-sm font-black text-navy-950">{formatStorage(option.storage)}</span>
+                          <span className="text-sm font-bold text-slate-600">{formatKes(option.price)}</span>
+                        </div>
+                      ))}
+                    </div>
+                    <a
+                      href={`${brand.whatsappUrl}?text=Hello%20Teekay%2C%20I%20want%20to%20source%20${encodeURIComponent(product.name)}.`}
+                      className="mt-5 inline-flex min-h-10 w-full items-center justify-center rounded-full bg-navy-950 px-4 text-sm font-black text-white transition hover:bg-ember-500"
+                    >
+                      Ask supplier
+                    </a>
+                  </div>
+                </article>
+              );
+            })}
           </div>
         </Container>
       </section>

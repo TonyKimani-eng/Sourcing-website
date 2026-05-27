@@ -130,86 +130,240 @@ export const siteContent = {
       {
         name: "Apple iPhone XR",
         brand: "Apple",
-        price: "KSh 22,000 - KSh 38,000",
-        oldPrice: "KSh 45,000",
-        color: "graphite"
+        image: "/10%20X%20series/IPHONE%20XR%20.jpg",
+        storageOptions: [
+          { storage: "64", price: 27630 },
+          { storage: "128", price: 30715 }
+        ]
       },
       {
         name: "Apple iPhone 11",
         brand: "Apple",
-        price: "KSh 28,000 - KSh 48,000",
-        oldPrice: "KSh 58,000",
-        color: "purple"
+        image: "/11series/iphone%2011.jpg",
+        storageOptions: [
+          { storage: "64", price: 29055 },
+          { storage: "128", price: 32840 }
+        ]
+      },
+      {
+        name: "Apple iPhone XS Max",
+        brand: "Apple",
+        image: "/10%20X%20series/iphone%20xs%20max.jpg",
+        storageOptions: [
+          { storage: "64", price: 26515 },
+          { storage: "256", price: 30585 }
+        ]
+      },
+      {
+        name: "Apple iPhone 11 Pro",
+        brand: "Apple",
+        image: "/11series/iphone%2011PRO.jpg",
+        storageOptions: [
+          { storage: "64", price: 35225 },
+          { storage: "256", price: 39295 }
+        ]
+      },
+      {
+        name: "Apple iPhone 11 Pro Max",
+        brand: "Apple",
+        image: "/11series/iphone%2011PROMAX.jpg",
+        storageOptions: [
+          { storage: "64", price: 39995 },
+          { storage: "256", price: 44065 }
+        ]
       },
       {
         name: "Apple iPhone 12",
         brand: "Apple",
-        price: "KSh 36,000 - KSh 65,000",
-        oldPrice: "KSh 75,000",
-        color: "blue"
+        image: "/12%20series/iphone12.jpg",
+        storageOptions: [
+          { storage: "64", price: 33540 },
+          { storage: "128", price: 37960 }
+        ]
+      },
+      {
+        name: "Apple iPhone 12 Pro",
+        brand: "Apple",
+        image: "/12%20series/iphone%2012PRO.jpg",
+        storageOptions: [
+          { storage: "128", price: 46385 },
+          { storage: "256", price: 50390 }
+        ]
+      },
+      {
+        name: "Apple iPhone 12 Pro Max",
+        brand: "Apple",
+        image: "/12%20series/iphone%2012PROMAX.jpg",
+        storageOptions: [
+          { storage: "128", price: 48160 },
+          { storage: "256", price: 52515 },
+          { storage: "512", price: 56935 }
+        ]
       },
       {
         name: "Apple iPhone 13",
         brand: "Apple",
-        price: "KSh 48,000 - KSh 82,000",
-        oldPrice: "KSh 95,000",
-        color: "green"
+        image: "/13%20series/IPHONE13.jpg",
+        storageOptions: [
+          { storage: "128", price: 44375 },
+          { storage: "256", price: 52930 }
+        ]
+      },
+      {
+        name: "Apple iPhone 13 Pro",
+        brand: "Apple",
+        image: "/13%20series/%23ios15%20%23apple%20%23iphone13pro%20%23iphone13lineup%20%23ios%E2%80%A6.jpg",
+        storageOptions: [
+          { storage: "128", price: 56740 },
+          { storage: "256", price: 62780 }
+        ]
+      },
+      {
+        name: "Apple iPhone 13 Pro Max",
+        brand: "Apple",
+        image: "/13%20series/iphone%2013promax.jpg",
+        storageOptions: [
+          { storage: "128", price: 64750 },
+          { storage: "256", price: 70790 },
+          { storage: "512", price: 76960 }
+        ]
       },
       {
         name: "Apple iPhone 14",
         brand: "Apple",
-        price: "KSh 62,000 - KSh 105,000",
-        oldPrice: "KSh 118,000",
-        color: "white"
+        image: "/14series/iphone14.jpg",
+        storageOptions: [
+          { storage: "128", price: 48445 }
+        ]
+      },
+      {
+        name: "Apple iPhone 14 Plus",
+        brand: "Apple",
+        image: "/14series/iphone14plus.jpg",
+        storageOptions: [
+          { storage: "128", price: 54615 },
+          { storage: "256", price: 63870 }
+        ]
+      },
+      {
+        name: "Apple iPhone 14 Pro",
+        brand: "Apple",
+        image: "/14series/iphone14pro.jpg",
+        storageOptions: [
+          { storage: "128", price: 65320 },
+          { storage: "256", price: 72760 },
+          { storage: "512", price: 79630 }
+        ]
+      },
+      {
+        name: "Apple iPhone 14 Pro Max",
+        brand: "Apple",
+        image: "/14series/iphone14promax.jpg",
+        storageOptions: [
+          { storage: "128", price: 72085 },
+          { storage: "256", price: 73225 },
+          { storage: "512", price: 87445 },
+          { storage: "1T", price: 99565 }
+        ]
       },
       {
         name: "Apple iPhone 15",
         brand: "Apple",
-        price: "KSh 78,000 - KSh 128,000",
-        oldPrice: "KSh 145,000",
-        color: "pink"
+        image: "/15%20series/iphone15.jpg",
+        storageOptions: [
+          { storage: "128", price: 73500 },
+          { storage: "256", price: 79890 }
+        ]
+      },
+      {
+        name: "Apple iPhone 15 Plus",
+        brand: "Apple",
+        image: "/15%20series/iphone15plus.jpg",
+        storageOptions: [
+          { storage: "128", price: 82690 },
+          { storage: "256", price: 91180 }
+        ]
+      },
+      {
+        name: "Apple iPhone 15 Pro",
+        brand: "Apple",
+        image: "/15%20series/iphone15pro.jpg",
+        storageOptions: [
+          { storage: "128", price: 77530 },
+          { storage: "256", price: 84970 }
+        ]
+      },
+      {
+        name: "Apple iPhone 15 Pro Max",
+        brand: "Apple",
+        image: "/15%20series/iphone%2015%20promax.jpg",
+        storageOptions: [
+          { storage: "256", price: 88960 },
+          { storage: "512", price: 106200 },
+          { storage: "1T", price: 114470 }
+        ]
       },
       {
         name: "Apple iPhone 16",
         brand: "Apple",
-        price: "KSh 92,000 - KSh 155,000",
-        oldPrice: "KSh 178,000",
-        color: "teal"
+        image: "/16%20series/iphone16.jpg",
+        storageOptions: [
+          { storage: "128", price: 88650 },
+          { storage: "256", price: 97620 }
+        ]
       },
       {
-        name: "Apple iPhone 17e",
+        name: "Apple iPhone 16 Plus",
         brand: "Apple",
-        price: "KSh 96,000",
-        oldPrice: "KSh 107,000",
-        color: "black"
+        image: "/16%20series/iphone16plus.jpg",
+        storageOptions: [
+          { storage: "128", price: 98890 },
+          { storage: "256", price: 105500 }
+        ]
+      },
+      {
+        name: "Apple iPhone 16 Pro",
+        brand: "Apple",
+        image: "/16%20series/iphone16pro.jpg",
+        storageOptions: [
+          { storage: "128", price: 109830 },
+          { storage: "256", price: 120510 }
+        ]
+      },
+      {
+        name: "Apple iPhone 16 Pro Max",
+        brand: "Apple",
+        image: "/16%20series/iphone%2016%20promax.jpg",
+        storageOptions: [
+          { storage: "256", price: 117500 },
+          { storage: "512", price: 128880 }
+        ]
       },
       {
         name: "Apple iPhone 17",
         brand: "Apple",
-        price: "KSh 110,000 - KSh 152,000",
-        oldPrice: "KSh 168,000",
-        color: "sky"
-      },
-      {
-        name: "Apple iPhone 17 Air",
-        brand: "Apple",
-        price: "KSh 118,000 - KSh 185,000",
-        oldPrice: "KSh 205,000",
-        color: "silver"
+        image: "/17%20series/iphone17.jpg",
+        storageOptions: [
+          { storage: "256", price: 103475 }
+        ]
       },
       {
         name: "Apple iPhone 17 Pro",
         brand: "Apple",
-        price: "KSh 166,000 - KSh 245,000",
-        oldPrice: "KSh 270,000",
-        color: "navy"
+        image: "/17%20series/iphone%2017PRO.jpg",
+        storageOptions: [
+          { storage: "256", price: 155444.3 },
+          { storage: "512", price: 182347.3 }
+        ]
       },
       {
         name: "Apple iPhone 17 Pro Max",
         brand: "Apple",
-        price: "KSh 180,000 - KSh 312,000",
-        oldPrice: "KSh 340,000",
-        color: "copper"
+        image: "/17%20series/iphone17%20promax.jpg",
+        storageOptions: [
+          { storage: "256", price: 174500 },
+          { storage: "512", price: 202160 }
+        ]
       }
     ]
   },

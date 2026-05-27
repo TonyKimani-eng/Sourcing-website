@@ -95,7 +95,7 @@ export default function ProductsPage() {
             <div>
               <p className="text-sm font-black uppercase text-ember-500">iPhones</p>
               <h2 className="mt-1 text-2xl font-black text-navy-950 sm:text-3xl">
-                Supplier-checked iPhone models
+                Factory refurbished iPhones, 100% battery
               </h2>
             </div>
             <p className="max-w-xl text-sm font-semibold leading-6 text-slate-500">

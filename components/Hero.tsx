@@ -1,4 +1,5 @@
 import { siteContent } from "@/data/site";
+import { AuthButtons } from "@/components/Auth";
 import { Container } from "@/components/Container";
 import { assetPath, routePath } from "@/data/paths";
 import Image from "next/image";
@@ -45,6 +46,9 @@ export function Hero() {
               </a>
             ))}
           </nav>
+          <div className="flex min-h-14 items-center bg-navy-950 px-2 shadow-soft sm:min-h-20 sm:px-4">
+            <AuthButtons compact />
+          </div>
         </header>
         <nav className="-mx-4 flex gap-2 overflow-x-auto border-t border-white/10 bg-ember-500 px-4 py-3 text-sm font-black text-white shadow-soft lg:hidden">
           {nav.map((item) => (

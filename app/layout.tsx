@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import "./globals.css";
+import { AuthProvider } from "@/components/Auth";
 import { GoogleAnalytics } from "@/components/GoogleAnalytics";
 import { siteContent } from "@/data/site";
 
@@ -20,8 +21,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="font-sans antialiased">
-        {children}
-        <GoogleAnalytics measurementId={gaMeasurementId} />
+        <AuthProvider>
+          {children}
+          <GoogleAnalytics measurementId={gaMeasurementId} />
+        </AuthProvider>
       </body>
     </html>
   );

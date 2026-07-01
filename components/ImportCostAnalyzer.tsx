@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { PurchaseLink } from "@/components/Auth";
 import { Container } from "@/components/Container";
 import { siteContent } from "@/data/site";
 
@@ -171,12 +172,12 @@ export function ImportCostAnalyzer() {
               <p className="text-sm font-semibold leading-6 text-slate-500">
                 Estimates exclude duty, taxes, supplier changes, and special handling. Teekay can confirm the final quote.
               </p>
-              <a
+              <PurchaseLink
                 href={`${brand.whatsappUrl}?text=${whatsappText}`}
                 className="inline-flex min-h-11 shrink-0 items-center justify-center rounded-full bg-ember-500 px-5 text-sm font-black text-white transition hover:bg-navy-950"
               >
                 Confirm quote
-              </a>
+              </PurchaseLink>
             </div>
           </div>
         </div>

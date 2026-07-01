@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
+import { AuthButtons, PurchaseLink } from "@/components/Auth";
 import { Container } from "@/components/Container";
 import { IphoneProductCard } from "@/components/IphoneProductCard";
 import { assetPath } from "@/data/paths";
@@ -48,12 +49,7 @@ export default function ProductsPage() {
               <Link href="/" className="hidden text-sm font-black text-white/70 transition hover:text-gold-400 sm:inline">
                 Home
               </Link>
-              <a
-                href={brand.whatsappUrl}
-                className="inline-flex min-h-10 items-center rounded-full bg-ember-500 px-4 text-sm font-black text-white transition hover:bg-gold-400 hover:text-navy-950"
-              >
-                WhatsApp
-              </a>
+              <AuthButtons compact />
             </div>
           </header>
         </Container>
@@ -134,12 +130,12 @@ export default function ProductsPage() {
                     </div>
                   ))}
                 </div>
-                <a
+                <PurchaseLink
                   href={`${brand.whatsappUrl}?text=Hello%20Teekay%2C%20I%20want%20to%20source%20${encodeURIComponent(product.title)}.`}
                   className="mt-6 inline-flex min-h-11 items-center rounded-full bg-ember-500 px-5 text-sm font-black text-white transition hover:bg-navy-950"
                 >
                   Ask about {product.title}
-                </a>
+                </PurchaseLink>
               </article>
             ))}
           </div>

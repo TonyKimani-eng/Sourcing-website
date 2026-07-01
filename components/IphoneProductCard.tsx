@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Image from "next/image";
+import { PurchaseLink } from "@/components/Auth";
 import { assetPath } from "@/data/paths";
 
 type StorageOption = {
@@ -91,12 +92,12 @@ export function IphoneProductCard({ product, whatsappUrl }: IphoneProductCardPro
             })}
           </div>
         </div>
-        <a
+        <PurchaseLink
           href={`${whatsappUrl}?text=${encodeURIComponent(message)}`}
           className="mt-5 inline-flex min-h-10 w-full items-center justify-center rounded-full bg-navy-950 px-4 text-sm font-black text-white transition hover:bg-ember-500"
         >
           Ask supplier
-        </a>
+        </PurchaseLink>
       </div>
     </article>
   );

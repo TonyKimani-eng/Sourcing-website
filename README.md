@@ -26,3 +26,18 @@ data/site.ts
 ```bash
 npm run build
 ```
+
+## Real Authentication
+
+This site uses Firebase Authentication for email/password sign in and sign up.
+Create a Firebase project, enable Email/Password under Authentication, then add
+these values to `.env.local` for local development:
+
+```text
+NEXT_PUBLIC_FIREBASE_API_KEY=
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=
+NEXT_PUBLIC_FIREBASE_APP_ID=
+```
+
+For GitHub Pages deployment, add the same keys as repository secrets.

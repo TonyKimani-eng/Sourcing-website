@@ -9,6 +9,14 @@ import {
   useMemo,
   useState
 } from "react";
+import {
+  createUserWithEmailAndPassword,
+  onAuthStateChanged,
+  signInWithEmailAndPassword,
+  signOut as firebaseSignOut,
+  updateProfile
+} from "firebase/auth";
+import { auth, isFirebaseConfigured } from "@/lib/firebase";
 
 type AuthMode = "signin" | "signup";
 
@@ -24,7 +32,31 @@ type AuthContextValue = {
 };
 
 const AuthContext = createContext<AuthContextValue | null>(null);
-const storageKey = "teekay-auth-user";
+
+function getAuthErrorMessage(error: unknown) {
+  if (
+    typeof error === "object" &&
+    error !== null &&
+    "code" in error &&
+    typeof error.code === "string"
+  ) {
+    const messages: Record<string, string> = {
+      "auth/email-already-in-use": "That email already has an account. Please sign in instead.",
+      "auth/invalid-credential": "Email or password is incorrect.",
+      "auth/invalid-email": "Please enter a valid email address.",
+      "auth/operation-not-allowed": "Email/password auth is not enabled in Firebase.",
+      "auth/too-many-requests": "Too many attempts. Please try again later.",
+      "auth/user-disabled": "This account has been disabled.",
+      "auth/user-not-found": "No account exists for that email.",
+      "auth/weak-password": "Use a password with at least 6 characters.",
+      "auth/wrong-password": "Email or password is incorrect."
+    };
+
+    return messages[error.code] ?? "Authentication failed. Please try again.";
+  }
+
+  return "Authentication failed. Please try again.";
+}
 
 function useAuthContext() {
   const context = useContext(AuthContext);
@@ -40,23 +72,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [mode, setMode] = useState<AuthMode>("signin");
   const [isOpen, setIsOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
-    const savedUser = window.localStorage.getItem(storageKey);
-
-    if (savedUser) {
-      setUser(JSON.parse(savedUser) as User);
+    if (!auth) {
+      return undefined;
     }
+
+    return onAuthStateChanged(auth, (firebaseUser) => {
+      setUser(
+        firebaseUser
+          ? {
+              name: firebaseUser.displayName ?? firebaseUser.email?.split("@")[0] ?? "Customer",
+              email: firebaseUser.email ?? ""
+            }
+          : null
+      );
+    });
   }, []);
 
   const openAuth = (nextMode: AuthMode = "signin") => {
     setMode(nextMode);
+    setErrorMessage("");
     setIsOpen(true);
   };
 
-  const signOut = () => {
-    window.localStorage.removeItem(storageKey);
-    setUser(null);
+  const signOut = async () => {
+    if (auth) {
+      await firebaseSignOut(auth);
+    }
   };
 
   const value = useMemo(
@@ -68,21 +113,40 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [user]
   );
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+
+    if (!auth) {
+      setErrorMessage("Firebase is not configured yet. Add your Firebase env vars first.");
+      return;
+    }
 
     const formData = new FormData(event.currentTarget);
     const email = String(formData.get("email") ?? "").trim();
     const name = String(formData.get("name") ?? "").trim() || email.split("@")[0] || "Customer";
+    const password = String(formData.get("password") ?? "");
 
     if (!email) {
       return;
     }
 
-    const nextUser = { name, email };
-    window.localStorage.setItem(storageKey, JSON.stringify(nextUser));
-    setUser(nextUser);
-    setIsOpen(false);
+    setIsSubmitting(true);
+    setErrorMessage("");
+
+    try {
+      if (mode === "signup") {
+        const credential = await createUserWithEmailAndPassword(auth, email, password);
+        await updateProfile(credential.user, { displayName: name });
+      } else {
+        await signInWithEmailAndPassword(auth, email, password);
+      }
+
+      setIsOpen(false);
+    } catch (error) {
+      setErrorMessage(getAuthErrorMessage(error));
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -120,6 +184,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             </div>
 
             <form className="mt-6 grid gap-4" onSubmit={handleSubmit}>
+              {!isFirebaseConfigured ? (
+                <div className="rounded-lg border border-ember-500/30 bg-ember-500/10 p-3 text-sm font-bold leading-6 text-ember-600">
+                  Firebase is not configured yet. Add your Firebase project values to the
+                  environment before using real sign in.
+                </div>
+              ) : null}
+              {errorMessage ? (
+                <div className="rounded-lg border border-ember-500/30 bg-ember-500/10 p-3 text-sm font-bold leading-6 text-ember-600">
+                  {errorMessage}
+                </div>
+              ) : null}
               {mode === "signup" ? (
                 <label className="grid gap-2">
                   <span className="text-sm font-black text-navy-950">Full name</span>
@@ -157,9 +232,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               </label>
               <button
                 type="submit"
+                disabled={isSubmitting}
                 className="mt-1 inline-flex min-h-12 items-center justify-center rounded-full bg-ember-500 px-5 text-sm font-black text-white transition hover:bg-navy-950"
               >
-                {mode === "signin" ? "Sign in" : "Create account"}
+                {isSubmitting ? "Please wait..." : mode === "signin" ? "Sign in" : "Create account"}
               </button>
             </form>
 

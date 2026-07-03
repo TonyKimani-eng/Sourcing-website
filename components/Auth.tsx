@@ -42,9 +42,14 @@ function getAuthErrorMessage(error: unknown) {
   ) {
     const messages: Record<string, string> = {
       "auth/email-already-in-use": "That email already has an account. Please sign in instead.",
+      "auth/api-key-not-valid": "Firebase API key is not valid. Check NEXT_PUBLIC_FIREBASE_API_KEY.",
+      "auth/app-not-authorized": "This website domain is not authorized in Firebase Authentication.",
+      "auth/configuration-not-found": "Firebase Authentication is not enabled for this project.",
       "auth/invalid-credential": "Email or password is incorrect.",
       "auth/invalid-email": "Please enter a valid email address.",
+      "auth/network-request-failed": "Could not reach Firebase. Check your internet connection.",
       "auth/operation-not-allowed": "Email/password auth is not enabled in Firebase.",
+      "auth/requests-from-referer-are-blocked": "This website domain is blocked by the Firebase API key settings.",
       "auth/too-many-requests": "Too many attempts. Please try again later.",
       "auth/user-disabled": "This account has been disabled.",
       "auth/user-not-found": "No account exists for that email.",
@@ -52,7 +57,7 @@ function getAuthErrorMessage(error: unknown) {
       "auth/wrong-password": "Email or password is incorrect."
     };
 
-    return messages[error.code] ?? "Authentication failed. Please try again.";
+    return messages[error.code] ?? `Authentication failed (${error.code}). Please try again.`;
   }
 
   return "Authentication failed. Please try again.";

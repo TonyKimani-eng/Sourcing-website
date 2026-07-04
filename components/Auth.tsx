@@ -4,6 +4,7 @@ import {
   createContext,
   FormEvent,
   ReactNode,
+  useCallback,
   useContext,
   useEffect,
   useMemo,
@@ -11,7 +12,11 @@ import {
 } from "react";
 import {
   createUserWithEmailAndPassword,
+  deleteUser,
+  linkWithCredential,
   onAuthStateChanged,
+  PhoneAuthProvider,
+  RecaptchaVerifier,
   signInWithEmailAndPassword,
   signOut as firebaseSignOut,
   updateProfile
@@ -19,10 +24,18 @@ import {
 import { auth, isFirebaseConfigured } from "@/lib/firebase";
 
 type AuthMode = "signin" | "signup";
+type SignupStep = "details" | "phone-code";
+type PendingSignup = {
+  email: string;
+  name: string;
+  password: string;
+  phone: string;
+};
 
 type User = {
   name: string;
   email: string;
+  phone: string;
 };
 
 type AuthContextValue = {
@@ -49,7 +62,14 @@ function getAuthErrorMessage(error: unknown) {
       "auth/invalid-email": "Please enter a valid email address.",
       "auth/network-request-failed": "Could not reach Firebase. Check your internet connection.",
       "auth/operation-not-allowed": "Email/password auth is not enabled in Firebase.",
+      "auth/provider-already-linked": "That phone number is already linked to this account.",
+      "auth/invalid-phone-number": "Enter the phone number in international format, for example +254712345678.",
+      "auth/invalid-verification-code": "The OTP code is incorrect. Please check it and try again.",
+      "auth/missing-verification-code": "Enter the OTP code sent to your phone.",
+      "auth/quota-exceeded": "SMS limit reached. Please try again later.",
       "auth/requests-from-referer-are-blocked": "This website domain is blocked by the Firebase API key settings.",
+      "auth/requires-recent-login": "Please sign in again before verifying this phone number.",
+      "auth/second-factor-already-in-use": "That phone number is already used by another account.",
       "auth/too-many-requests": "Too many attempts. Please try again later.",
       "auth/user-disabled": "This account has been disabled.",
       "auth/user-not-found": "No account exists for that email.",
@@ -76,6 +96,10 @@ function useAuthContext() {
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [mode, setMode] = useState<AuthMode>("signin");
+  const [signupStep, setSignupStep] = useState<SignupStep>("details");
+  const [verificationId, setVerificationId] = useState("");
+  const [pendingSignup, setPendingSignup] = useState<PendingSignup | null>(null);
+  const [phoneForVerification, setPhoneForVerification] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
@@ -90,24 +114,39 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         firebaseUser
           ? {
               name: firebaseUser.displayName ?? firebaseUser.email?.split("@")[0] ?? "Customer",
-              email: firebaseUser.email ?? ""
+              email: firebaseUser.email ?? "",
+              phone: firebaseUser.phoneNumber ?? ""
             }
           : null
       );
     });
   }, []);
 
-  const openAuth = (nextMode: AuthMode = "signin") => {
-    setMode(nextMode);
+  const resetAuthForm = useCallback(() => {
+    setSignupStep("details");
+    setVerificationId("");
+    setPendingSignup(null);
+    setPhoneForVerification("");
     setErrorMessage("");
-    setIsOpen(true);
-  };
+    setIsSubmitting(false);
+  }, []);
 
-  const signOut = async () => {
+  const openAuth = useCallback((nextMode: AuthMode = "signin") => {
+    setMode(nextMode);
+    resetAuthForm();
+    setIsOpen(true);
+  }, [resetAuthForm]);
+
+  const closeAuth = useCallback(async () => {
+    resetAuthForm();
+    setIsOpen(false);
+  }, [resetAuthForm]);
+
+  const signOut = useCallback(async () => {
     if (auth) {
       await firebaseSignOut(auth);
     }
-  };
+  }, []);
 
   const value = useMemo(
     () => ({
@@ -115,7 +154,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       openAuth,
       signOut
     }),
-    [user]
+    [openAuth, signOut, user]
   );
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -126,13 +165,73 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return;
     }
 
+    const activeAuth = auth;
     const formData = new FormData(event.currentTarget);
     const email = String(formData.get("email") ?? "").trim();
     const name = String(formData.get("name") ?? "").trim() || email.split("@")[0] || "Customer";
+    const phone = String(formData.get("phone") ?? "").trim();
     const password = String(formData.get("password") ?? "");
+    const confirmPassword = String(formData.get("confirmPassword") ?? "");
+    const otp = String(formData.get("otp") ?? "").trim();
+
+    if (mode === "signup" && signupStep === "phone-code") {
+      if (!pendingSignup || !verificationId) {
+        setErrorMessage("Start signup again so we can verify your phone number.");
+        return;
+      }
+
+      if (!otp) {
+        setErrorMessage("Enter the OTP code sent to your phone.");
+        return;
+      }
+
+      setIsSubmitting(true);
+      setErrorMessage("");
+
+      try {
+        const phoneCredential = PhoneAuthProvider.credential(verificationId, otp);
+        const userCredential = await createUserWithEmailAndPassword(
+          activeAuth,
+          pendingSignup.email,
+          pendingSignup.password
+        );
+        await updateProfile(userCredential.user, { displayName: pendingSignup.name });
+        await linkWithCredential(userCredential.user, phoneCredential);
+        resetAuthForm();
+        setIsOpen(false);
+      } catch (error) {
+        if (activeAuth.currentUser && !activeAuth.currentUser.phoneNumber) {
+          await deleteUser(activeAuth.currentUser).catch(async () => {
+            await firebaseSignOut(activeAuth);
+          });
+        }
+        setErrorMessage(getAuthErrorMessage(error));
+      } finally {
+        setIsSubmitting(false);
+      }
+
+      return;
+    }
 
     if (!email) {
       return;
+    }
+
+    if (mode === "signup") {
+      if (!phone) {
+        setErrorMessage("Enter a phone number so we can send the OTP.");
+        return;
+      }
+
+      if (!phone.startsWith("+")) {
+        setErrorMessage("Enter the phone number in international format, for example +254712345678.");
+        return;
+      }
+
+      if (password !== confirmPassword) {
+        setErrorMessage("The two passwords do not match.");
+        return;
+      }
     }
 
     setIsSubmitting(true);
@@ -140,13 +239,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     try {
       if (mode === "signup") {
-        const credential = await createUserWithEmailAndPassword(auth, email, password);
-        await updateProfile(credential.user, { displayName: name });
-      } else {
-        await signInWithEmailAndPassword(auth, email, password);
-      }
+        const verifier = new RecaptchaVerifier(activeAuth, "signup-recaptcha", {
+          size: "invisible"
+        });
+        const phoneProvider = new PhoneAuthProvider(activeAuth);
+        const nextVerificationId = await phoneProvider.verifyPhoneNumber(phone, verifier);
 
-      setIsOpen(false);
+        setVerificationId(nextVerificationId);
+        setPendingSignup({ email, name, password, phone });
+        setPhoneForVerification(phone);
+        setSignupStep("phone-code");
+      } else {
+        await signInWithEmailAndPassword(activeAuth, email, password);
+        setIsOpen(false);
+      }
     } catch (error) {
       setErrorMessage(getAuthErrorMessage(error));
     } finally {
@@ -163,7 +269,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           role="dialog"
           aria-modal="true"
           aria-labelledby="auth-title"
-          onClick={() => setIsOpen(false)}
+          onClick={() => void closeAuth()}
         >
           <div
             className="w-full max-w-md rounded-lg bg-white p-5 shadow-soft sm:p-6"
@@ -180,7 +286,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               </div>
               <button
                 type="button"
-                onClick={() => setIsOpen(false)}
+                onClick={() => void closeAuth()}
                 className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-slate-100 text-xl font-black leading-none text-navy-950 transition hover:bg-ember-500 hover:text-white"
                 aria-label="Close sign in dialog"
               >
@@ -200,7 +306,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                   {errorMessage}
                 </div>
               ) : null}
-              {mode === "signup" ? (
+              {mode === "signup" && signupStep === "phone-code" ? (
+                <>
+                  <div className="rounded-lg border border-teal-500/30 bg-teal-500/10 p-3 text-sm font-bold leading-6 text-teal-700">
+                    We sent an OTP to {phoneForVerification}. Enter it to verify your phone number.
+                  </div>
+                  <label className="grid gap-2">
+                    <span className="text-sm font-black text-navy-950">OTP code</span>
+                    <input
+                      name="otp"
+                      type="text"
+                      inputMode="numeric"
+                      autoComplete="one-time-code"
+                      required
+                      className="min-h-12 rounded-lg border border-slate-200 px-4 font-bold text-navy-950 outline-none transition focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10"
+                      placeholder="6-digit code"
+                    />
+                  </label>
+                </>
+              ) : null}
+              {mode === "signup" && signupStep === "details" ? (
                 <label className="grid gap-2">
                   <span className="text-sm font-black text-navy-950">Full name</span>
                   <input
@@ -212,35 +337,73 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                   />
                 </label>
               ) : null}
-              <label className="grid gap-2">
-                <span className="text-sm font-black text-navy-950">Email address</span>
-                <input
-                  name="email"
-                  type="email"
-                  required
-                  autoComplete="email"
-                  className="min-h-12 rounded-lg border border-slate-200 px-4 font-bold text-navy-950 outline-none transition focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10"
-                  placeholder="you@example.com"
-                />
-              </label>
-              <label className="grid gap-2">
-                <span className="text-sm font-black text-navy-950">Password</span>
-                <input
-                  name="password"
-                  type="password"
-                  required
-                  autoComplete={mode === "signin" ? "current-password" : "new-password"}
-                  minLength={6}
-                  className="min-h-12 rounded-lg border border-slate-200 px-4 font-bold text-navy-950 outline-none transition focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10"
-                  placeholder="Minimum 6 characters"
-                />
-              </label>
+              {signupStep === "details" ? (
+                <>
+                  <label className="grid gap-2">
+                    <span className="text-sm font-black text-navy-950">Email address</span>
+                    <input
+                      name="email"
+                      type="email"
+                      required
+                      autoComplete="email"
+                      className="min-h-12 rounded-lg border border-slate-200 px-4 font-bold text-navy-950 outline-none transition focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10"
+                      placeholder="you@example.com"
+                    />
+                  </label>
+                  {mode === "signup" ? (
+                    <label className="grid gap-2">
+                      <span className="text-sm font-black text-navy-950">Phone number</span>
+                      <input
+                        name="phone"
+                        type="tel"
+                        required
+                        autoComplete="tel"
+                        className="min-h-12 rounded-lg border border-slate-200 px-4 font-bold text-navy-950 outline-none transition focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10"
+                        placeholder="+254712345678"
+                      />
+                    </label>
+                  ) : null}
+                  <label className="grid gap-2">
+                    <span className="text-sm font-black text-navy-950">Password</span>
+                    <input
+                      name="password"
+                      type="password"
+                      required
+                      autoComplete={mode === "signin" ? "current-password" : "new-password"}
+                      minLength={6}
+                      className="min-h-12 rounded-lg border border-slate-200 px-4 font-bold text-navy-950 outline-none transition focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10"
+                      placeholder="Minimum 6 characters"
+                    />
+                  </label>
+                  {mode === "signup" ? (
+                    <label className="grid gap-2">
+                      <span className="text-sm font-black text-navy-950">Confirm password</span>
+                      <input
+                        name="confirmPassword"
+                        type="password"
+                        required
+                        autoComplete="new-password"
+                        minLength={6}
+                        className="min-h-12 rounded-lg border border-slate-200 px-4 font-bold text-navy-950 outline-none transition focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10"
+                        placeholder="Re-enter password"
+                      />
+                    </label>
+                  ) : null}
+                </>
+              ) : null}
+              <div id="signup-recaptcha" />
               <button
                 type="submit"
                 disabled={isSubmitting}
                 className="mt-1 inline-flex min-h-12 items-center justify-center rounded-full bg-ember-500 px-5 text-sm font-black text-white transition hover:bg-navy-950"
               >
-                {isSubmitting ? "Please wait..." : mode === "signin" ? "Sign in" : "Create account"}
+                {isSubmitting
+                  ? "Please wait..."
+                  : mode === "signin"
+                    ? "Sign in"
+                    : signupStep === "phone-code"
+                      ? "Verify phone"
+                      : "Create account"}
               </button>
             </form>
 
@@ -248,7 +411,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               {mode === "signin" ? "New to Teekay?" : "Already have an account?"}{" "}
               <button
                 type="button"
-                onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
+                onClick={() => {
+                  setMode(mode === "signin" ? "signup" : "signin");
+                  resetAuthForm();
+                }}
                 className="font-black text-teal-600 underline decoration-teal-500 decoration-2 underline-offset-4"
               >
                 {mode === "signin" ? "Sign up" : "Sign in"}

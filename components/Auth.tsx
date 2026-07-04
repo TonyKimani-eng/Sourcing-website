@@ -17,6 +17,7 @@ import {
   onAuthStateChanged,
   PhoneAuthProvider,
   RecaptchaVerifier,
+  sendPasswordResetEmail,
   signInWithEmailAndPassword,
   signOut as firebaseSignOut,
   updateProfile
@@ -589,7 +590,7 @@ function AccountPanel({
             value={user.phone ? "Verified by OTP" : "Not verified"}
             tone={user.phone ? "success" : "warning"}
           />
-          <AccountDetail label="Password" value="Managed securely by Firebase" />
+          <PasswordResetAction email={user.email} />
         </div>
 
         <div className="mt-6 flex flex-col gap-3 border-t border-slate-200 pt-5 sm:flex-row sm:justify-end">
@@ -609,6 +610,51 @@ function AccountPanel({
           </button>
         </div>
       </div>
+    </div>
+  );
+}
+
+function PasswordResetAction({ email }: { email: string }) {
+  const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
+
+  const sendResetEmail = async () => {
+    if (!auth || !email) {
+      setStatus("error");
+      return;
+    }
+
+    setStatus("sending");
+
+    try {
+      await sendPasswordResetEmail(auth, email);
+      setStatus("sent");
+    } catch {
+      setStatus("error");
+    }
+  };
+
+  return (
+    <div className="grid gap-2 rounded-lg border border-slate-200 p-3">
+      <span className="text-xs font-black uppercase text-slate-500">Password</span>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <span className="rounded-md bg-slate-100 px-3 py-2 text-sm font-black leading-5 text-slate-700">
+          ********
+        </span>
+        <button
+          type="button"
+          onClick={() => void sendResetEmail()}
+          disabled={status === "sending" || status === "sent"}
+          className="inline-flex min-h-10 items-center justify-center rounded-full border border-slate-200 px-4 text-xs font-black text-navy-950 transition hover:border-teal-500 hover:text-teal-600 disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          {status === "sending" ? "Sending..." : status === "sent" ? "Email sent" : "Reset password"}
+        </button>
+      </div>
+      {status === "sent" ? (
+        <span className="text-xs font-bold text-teal-700">Check your email for the reset link.</span>
+      ) : null}
+      {status === "error" ? (
+        <span className="text-xs font-bold text-ember-600">Could not send reset email. Try again.</span>
+      ) : null}
     </div>
   );
 }

@@ -93,6 +93,25 @@ function useAuthContext() {
   return context;
 }
 
+function PasswordVisibilityIcon({ isVisible }: { isVisible: boolean }) {
+  return (
+    <svg
+      aria-hidden="true"
+      className="h-5 w-5"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={2}
+    >
+      <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z" />
+      <circle cx="12" cy="12" r="3" />
+      {isVisible ? <path d="M4 20 20 4" /> : null}
+    </svg>
+  );
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [mode, setMode] = useState<AuthMode>("signin");
@@ -382,11 +401,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                       <button
                         type="button"
                         onClick={() => setShowPassword((isVisible) => !isVisible)}
-                        className="absolute inset-y-0 right-0 inline-flex w-12 items-center justify-center text-lg text-slate-500 transition hover:text-teal-600"
+                        className="absolute inset-y-0 right-0 inline-flex w-12 items-center justify-center text-slate-500 transition hover:text-teal-600"
                         aria-label={showPassword ? "Hide password" : "Show password"}
                         title={showPassword ? "Hide password" : "Show password"}
                       >
-                        {showPassword ? "🙈" : "👁️"}
+                        <PasswordVisibilityIcon isVisible={showPassword} />
                       </button>
                     </div>
                   </label>
@@ -406,11 +425,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                         <button
                           type="button"
                           onClick={() => setShowConfirmPassword((isVisible) => !isVisible)}
-                          className="absolute inset-y-0 right-0 inline-flex w-12 items-center justify-center text-lg text-slate-500 transition hover:text-teal-600"
+                          className="absolute inset-y-0 right-0 inline-flex w-12 items-center justify-center text-slate-500 transition hover:text-teal-600"
                           aria-label={showConfirmPassword ? "Hide confirm password" : "Show confirm password"}
                           title={showConfirmPassword ? "Hide confirm password" : "Show confirm password"}
                         >
-                          {showConfirmPassword ? "🙈" : "👁️"}
+                          <PasswordVisibilityIcon isVisible={showConfirmPassword} />
                         </button>
                       </div>
                     </label>

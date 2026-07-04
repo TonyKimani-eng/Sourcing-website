@@ -126,6 +126,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [phoneForVerification, setPhoneForVerification] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [passwordResetStatus, setPasswordResetStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
   const [isOpen, setIsOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
@@ -156,6 +157,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setPhoneForVerification("");
     setShowPassword(false);
     setShowConfirmPassword(false);
+    setPasswordResetStatus("idle");
     setErrorMessage("");
     setIsSubmitting(false);
   }, []);
@@ -185,6 +187,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }),
     [openAuth, signOut, user]
   );
+
+  const sendSigninPasswordReset = async (form: HTMLFormElement | null) => {
+    if (!auth) {
+      setPasswordResetStatus("error");
+      return;
+    }
+
+    const email = String(new FormData(form ?? undefined).get("email") ?? "").trim();
+
+    if (!email) {
+      setErrorMessage("Enter your email address first, then request a reset link.");
+      setPasswordResetStatus("idle");
+      return;
+    }
+
+    setErrorMessage("");
+    setPasswordResetStatus("sending");
+
+    try {
+      await sendPasswordResetEmail(auth, email);
+      setPasswordResetStatus("sent");
+    } catch {
+      setPasswordResetStatus("error");
+    }
+  };
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -415,6 +442,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                       </button>
                     </div>
                   </label>
+                  {mode === "signin" ? (
+                    <div className="flex flex-col gap-2 text-sm font-bold sm:flex-row sm:items-center sm:justify-between">
+                      <button
+                        type="button"
+                        onClick={(event) => void sendSigninPasswordReset(event.currentTarget.form)}
+                        disabled={passwordResetStatus === "sending" || passwordResetStatus === "sent"}
+                        className="self-start font-black text-teal-600 underline decoration-teal-500 decoration-2 underline-offset-4 transition hover:text-navy-950 disabled:cursor-not-allowed disabled:opacity-60"
+                      >
+                        {passwordResetStatus === "sending"
+                          ? "Sending reset link..."
+                          : passwordResetStatus === "sent"
+                            ? "Reset link sent"
+                            : "Forgot password?"}
+                      </button>
+                      {passwordResetStatus === "sent" ? (
+                        <span className="text-xs font-bold text-teal-700">Check your email.</span>
+                      ) : null}
+                      {passwordResetStatus === "error" ? (
+                        <span className="text-xs font-bold text-ember-600">Could not send reset link.</span>
+                      ) : null}
+                    </div>
+                  ) : null}
                   {mode === "signup" ? (
                     <label className="grid gap-2">
                       <span className="text-sm font-black text-navy-950">Confirm password</span>

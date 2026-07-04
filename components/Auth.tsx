@@ -46,7 +46,7 @@ type AuthContextValue = {
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
-function getAuthErrorMessage(error: unknown) {
+function getAuthErrorMessage(error: unknown, context: "email" | "phone" = "email") {
   if (
     typeof error === "object" &&
     error !== null &&
@@ -61,7 +61,10 @@ function getAuthErrorMessage(error: unknown) {
       "auth/invalid-credential": "Email or password is incorrect.",
       "auth/invalid-email": "Please enter a valid email address.",
       "auth/network-request-failed": "Could not reach Firebase. Check your internet connection.",
-      "auth/operation-not-allowed": "Email/password auth is not enabled in Firebase.",
+      "auth/operation-not-allowed":
+        context === "phone"
+          ? "Phone sign-in is not enabled in Firebase. Enable Phone under Authentication > Sign-in method."
+          : "Email/password auth is not enabled in Firebase.",
       "auth/provider-already-linked": "That phone number is already linked to this account.",
       "auth/invalid-phone-number": "Enter the phone number in international format, for example +254712345678.",
       "auth/invalid-verification-code": "The OTP code is incorrect. Please check it and try again.",
@@ -228,7 +231,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             await firebaseSignOut(activeAuth);
           });
         }
-        setErrorMessage(getAuthErrorMessage(error));
+        setErrorMessage(getAuthErrorMessage(error, "phone"));
       } finally {
         setIsSubmitting(false);
       }
@@ -277,7 +280,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setIsOpen(false);
       }
     } catch (error) {
-      setErrorMessage(getAuthErrorMessage(error));
+      setErrorMessage(getAuthErrorMessage(error, mode === "signup" ? "phone" : "email"));
     } finally {
       setIsSubmitting(false);
     }

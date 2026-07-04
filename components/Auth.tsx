@@ -24,7 +24,7 @@ import {
 } from "firebase/auth";
 import { auth, isFirebaseConfigured } from "@/lib/firebase";
 
-type AuthMode = "signin" | "signup";
+type AuthMode = "signin" | "signup" | "reset";
 type SignupStep = "details" | "phone-code";
 type PendingSignup = {
   email: string;
@@ -188,31 +188,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [openAuth, signOut, user]
   );
 
-  const sendSigninPasswordReset = async (form: HTMLFormElement | null) => {
-    if (!auth) {
-      setPasswordResetStatus("error");
-      return;
-    }
-
-    const email = String(new FormData(form ?? undefined).get("email") ?? "").trim();
-
-    if (!email) {
-      setErrorMessage("Enter your email address first, then request a reset link.");
-      setPasswordResetStatus("idle");
-      return;
-    }
-
-    setErrorMessage("");
-    setPasswordResetStatus("sending");
-
-    try {
-      await sendPasswordResetEmail(auth, email);
-      setPasswordResetStatus("sent");
-    } catch {
-      setPasswordResetStatus("error");
-    }
-  };
-
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
@@ -229,6 +204,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const password = String(formData.get("password") ?? "");
     const confirmPassword = String(formData.get("confirmPassword") ?? "");
     const otp = String(formData.get("otp") ?? "").trim();
+
+    if (mode === "reset") {
+      if (!email) {
+        setErrorMessage("Enter your email address so we can send the reset link.");
+        return;
+      }
+
+      setErrorMessage("");
+      setIsSubmitting(true);
+      setPasswordResetStatus("sending");
+
+      try {
+        await sendPasswordResetEmail(activeAuth, email);
+        setPasswordResetStatus("sent");
+      } catch {
+        setPasswordResetStatus("error");
+      } finally {
+        setIsSubmitting(false);
+      }
+
+      return;
+    }
 
     if (mode === "signup" && signupStep === "phone-code") {
       if (!pendingSignup || !verificationId) {
@@ -334,10 +331,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="text-xs font-black uppercase text-teal-600">
-                  {mode === "signin" ? "Welcome back" : "Create account"}
+                  {mode === "signin" ? "Welcome back" : mode === "reset" ? "Password help" : "Create account"}
                 </p>
                 <h2 id="auth-title" className="mt-1 text-2xl font-black text-navy-950">
-                  {mode === "signin" ? "Sign in to purchase" : "Sign up to purchase"}
+                  {mode === "signin"
+                    ? "Sign in to purchase"
+                    : mode === "reset"
+                      ? "Reset your password"
+                      : "Sign up to purchase"}
                 </h2>
               </div>
               <button
@@ -361,6 +362,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 <div className="rounded-lg border border-ember-500/30 bg-ember-500/10 p-3 text-sm font-bold leading-6 text-ember-600">
                   {errorMessage}
                 </div>
+              ) : null}
+              {mode === "reset" ? (
+                <>
+                  <label className="grid gap-2">
+                    <span className="text-sm font-black text-navy-950">Email address</span>
+                    <input
+                      name="email"
+                      type="email"
+                      required
+                      autoComplete="email"
+                      className="min-h-12 rounded-lg border border-slate-200 px-4 font-bold text-navy-950 outline-none transition focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10"
+                      placeholder="you@example.com"
+                    />
+                  </label>
+                  {passwordResetStatus === "sent" ? (
+                    <div className="rounded-lg border border-teal-500/30 bg-teal-500/10 p-3 text-sm font-bold leading-6 text-teal-700">
+                      Reset link sent. Check your email.
+                    </div>
+                  ) : null}
+                  {passwordResetStatus === "error" ? (
+                    <div className="rounded-lg border border-ember-500/30 bg-ember-500/10 p-3 text-sm font-bold leading-6 text-ember-600">
+                      Could not send reset link. Check the email and try again.
+                    </div>
+                  ) : null}
+                </>
               ) : null}
               {mode === "signup" && signupStep === "phone-code" ? (
                 <>
@@ -393,7 +419,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                   />
                 </label>
               ) : null}
-              {signupStep === "details" ? (
+              {mode !== "reset" && signupStep === "details" ? (
                 <>
                   <label className="grid gap-2">
                     <span className="text-sm font-black text-navy-950">Email address</span>
@@ -446,22 +472,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                     <div className="flex flex-col gap-2 text-sm font-bold sm:flex-row sm:items-center sm:justify-between">
                       <button
                         type="button"
-                        onClick={(event) => void sendSigninPasswordReset(event.currentTarget.form)}
-                        disabled={passwordResetStatus === "sending" || passwordResetStatus === "sent"}
+                        onClick={() => {
+                          setMode("reset");
+                          setErrorMessage("");
+                          setPasswordResetStatus("idle");
+                          setShowPassword(false);
+                        }}
                         className="self-start font-black text-teal-600 underline decoration-teal-500 decoration-2 underline-offset-4 transition hover:text-navy-950 disabled:cursor-not-allowed disabled:opacity-60"
                       >
-                        {passwordResetStatus === "sending"
-                          ? "Sending reset link..."
-                          : passwordResetStatus === "sent"
-                            ? "Reset link sent"
-                            : "Forgot password?"}
+                        Forgot password?
                       </button>
-                      {passwordResetStatus === "sent" ? (
-                        <span className="text-xs font-bold text-teal-700">Check your email.</span>
-                      ) : null}
-                      {passwordResetStatus === "error" ? (
-                        <span className="text-xs font-bold text-ember-600">Could not send reset link.</span>
-                      ) : null}
                     </div>
                   ) : null}
                   {mode === "signup" ? (
@@ -499,7 +519,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               >
                 {isSubmitting
                   ? "Please wait..."
-                  : mode === "signin"
+                  : mode === "reset"
+                    ? passwordResetStatus === "sending"
+                      ? "Sending..."
+                      : passwordResetStatus === "sent"
+                        ? "Send again"
+                        : "Send reset link"
+                    : mode === "signin"
                     ? "Sign in"
                     : signupStep === "phone-code"
                       ? "Verify phone"
@@ -508,7 +534,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             </form>
 
             <div className="mt-5 border-t border-slate-200 pt-4 text-center text-sm font-bold text-slate-600">
-              {mode === "signin" ? "New to Teekay?" : "Already have an account?"}{" "}
+              {mode === "signin"
+                ? "New to Teekay?"
+                : mode === "reset"
+                  ? "Remember your password?"
+                  : "Already have an account?"}{" "}
               <button
                 type="button"
                 onClick={() => {

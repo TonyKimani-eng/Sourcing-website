@@ -35,6 +35,7 @@ type PendingSignup = {
 type User = {
   name: string;
   email: string;
+  emailVerified: boolean;
   phone: string;
 };
 
@@ -139,6 +140,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           ? {
               name: firebaseUser.displayName ?? firebaseUser.email?.split("@")[0] ?? "Customer",
               email: firebaseUser.email ?? "",
+              emailVerified: firebaseUser.emailVerified,
               phone: firebaseUser.phoneNumber ?? ""
             }
           : null
@@ -477,20 +479,39 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 export function AuthButtons({ compact = false }: { compact?: boolean }) {
   const { user, openAuth, signOut } = useAuthContext();
+  const [isAccountOpen, setIsAccountOpen] = useState(false);
+
+  useEffect(() => {
+    if (!user) {
+      setIsAccountOpen(false);
+    }
+  }, [user]);
 
   if (user) {
     return (
-      <div className="flex min-w-0 items-center gap-2">
-        <span className="hidden max-w-28 truncate text-xs font-black text-white/80 sm:inline">
-          {user.name}
-        </span>
+      <div className="relative flex min-w-0 items-center gap-2">
         <button
           type="button"
-          onClick={signOut}
-          className="inline-flex min-h-10 shrink-0 items-center justify-center rounded-full border border-white/20 px-3 text-xs font-black text-white transition hover:border-gold-400 hover:text-gold-400 sm:px-4"
+          onClick={() => setIsAccountOpen(true)}
+          className="inline-flex min-h-10 min-w-0 shrink-0 items-center gap-2 rounded-full border border-white/20 px-3 text-xs font-black text-white transition hover:border-gold-400 hover:text-gold-400 sm:px-4"
+          aria-haspopup="dialog"
+          aria-expanded={isAccountOpen}
         >
-          Sign out
+          <span className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-gold-400 text-[10px] text-navy-950">
+            {user.name.slice(0, 1).toUpperCase()}
+          </span>
+          <span className={compact ? "hidden sm:inline" : "inline"}>Account</span>
         </button>
+        {isAccountOpen ? (
+          <AccountPanel
+            user={user}
+            onClose={() => setIsAccountOpen(false)}
+            onSignOut={async () => {
+              setIsAccountOpen(false);
+              await signOut();
+            }}
+          />
+        ) : null}
       </div>
     );
   }
@@ -513,6 +534,107 @@ export function AuthButtons({ compact = false }: { compact?: boolean }) {
       >
         Sign up
       </button>
+    </div>
+  );
+}
+
+function AccountPanel({
+  user,
+  onClose,
+  onSignOut
+}: {
+  user: User;
+  onClose: () => void;
+  onSignOut: () => Promise<void>;
+}) {
+  return (
+    <div
+      className="fixed inset-0 z-[80] flex items-start justify-center bg-navy-950/75 px-4 py-6 sm:items-center"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="account-title"
+      onClick={onClose}
+    >
+      <div
+        className="w-full max-w-md rounded-lg bg-white p-5 shadow-soft sm:p-6"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <div className="flex items-start justify-between gap-4">
+          <div className="min-w-0">
+            <p className="text-xs font-black uppercase text-teal-600">Account</p>
+            <h2 id="account-title" className="mt-1 truncate text-2xl font-black text-navy-950">
+              {user.name}
+            </h2>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-slate-100 text-xl font-black leading-none text-navy-950 transition hover:bg-ember-500 hover:text-white"
+            aria-label="Close account panel"
+          >
+            x
+          </button>
+        </div>
+
+        <div className="mt-6 grid gap-3">
+          <AccountDetail label="Email" value={user.email || "Not available"} />
+          <AccountDetail
+            label="Email status"
+            value={user.emailVerified ? "Verified" : "Not verified"}
+            tone={user.emailVerified ? "success" : "muted"}
+          />
+          <AccountDetail label="Phone" value={user.phone || "Not available"} />
+          <AccountDetail
+            label="Phone status"
+            value={user.phone ? "Verified by OTP" : "Not verified"}
+            tone={user.phone ? "success" : "warning"}
+          />
+          <AccountDetail label="Password" value="Managed securely by Firebase" />
+        </div>
+
+        <div className="mt-6 flex flex-col gap-3 border-t border-slate-200 pt-5 sm:flex-row sm:justify-end">
+          <button
+            type="button"
+            onClick={onClose}
+            className="inline-flex min-h-11 items-center justify-center rounded-full border border-slate-200 px-5 text-sm font-black text-navy-950 transition hover:border-teal-500 hover:text-teal-600"
+          >
+            Close
+          </button>
+          <button
+            type="button"
+            onClick={() => void onSignOut()}
+            className="inline-flex min-h-11 items-center justify-center rounded-full bg-ember-500 px-5 text-sm font-black text-white transition hover:bg-navy-950"
+          >
+            Log out
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function AccountDetail({
+  label,
+  value,
+  tone = "muted"
+}: {
+  label: string;
+  value: string;
+  tone?: "muted" | "success" | "warning";
+}) {
+  const toneClass =
+    tone === "success"
+      ? "bg-teal-500/10 text-teal-700"
+      : tone === "warning"
+        ? "bg-ember-500/10 text-ember-600"
+        : "bg-slate-100 text-slate-700";
+
+  return (
+    <div className="grid gap-1 rounded-lg border border-slate-200 p-3">
+      <span className="text-xs font-black uppercase text-slate-500">{label}</span>
+      <span className={`min-h-8 rounded-md px-3 py-2 text-sm font-black leading-5 ${toneClass}`}>
+        {value}
+      </span>
     </div>
   );
 }

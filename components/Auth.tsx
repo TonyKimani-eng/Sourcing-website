@@ -100,6 +100,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [verificationId, setVerificationId] = useState("");
   const [pendingSignup, setPendingSignup] = useState<PendingSignup | null>(null);
   const [phoneForVerification, setPhoneForVerification] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
@@ -127,6 +129,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setVerificationId("");
     setPendingSignup(null);
     setPhoneForVerification("");
+    setShowPassword(false);
+    setShowConfirmPassword(false);
     setErrorMessage("");
     setIsSubmitting(false);
   }, []);
@@ -365,28 +369,50 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                   ) : null}
                   <label className="grid gap-2">
                     <span className="text-sm font-black text-navy-950">Password</span>
-                    <input
-                      name="password"
-                      type="password"
-                      required
-                      autoComplete={mode === "signin" ? "current-password" : "new-password"}
-                      minLength={6}
-                      className="min-h-12 rounded-lg border border-slate-200 px-4 font-bold text-navy-950 outline-none transition focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10"
-                      placeholder="Minimum 6 characters"
-                    />
+                    <div className="relative">
+                      <input
+                        name="password"
+                        type={showPassword ? "text" : "password"}
+                        required
+                        autoComplete={mode === "signin" ? "current-password" : "new-password"}
+                        minLength={6}
+                        className="min-h-12 w-full rounded-lg border border-slate-200 px-4 pr-12 font-bold text-navy-950 outline-none transition focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10"
+                        placeholder="Minimum 6 characters"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword((isVisible) => !isVisible)}
+                        className="absolute inset-y-0 right-0 inline-flex w-12 items-center justify-center text-lg text-slate-500 transition hover:text-teal-600"
+                        aria-label={showPassword ? "Hide password" : "Show password"}
+                        title={showPassword ? "Hide password" : "Show password"}
+                      >
+                        {showPassword ? "🙈" : "👁️"}
+                      </button>
+                    </div>
                   </label>
                   {mode === "signup" ? (
                     <label className="grid gap-2">
                       <span className="text-sm font-black text-navy-950">Confirm password</span>
-                      <input
-                        name="confirmPassword"
-                        type="password"
-                        required
-                        autoComplete="new-password"
-                        minLength={6}
-                        className="min-h-12 rounded-lg border border-slate-200 px-4 font-bold text-navy-950 outline-none transition focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10"
-                        placeholder="Re-enter password"
-                      />
+                      <div className="relative">
+                        <input
+                          name="confirmPassword"
+                          type={showConfirmPassword ? "text" : "password"}
+                          required
+                          autoComplete="new-password"
+                          minLength={6}
+                          className="min-h-12 w-full rounded-lg border border-slate-200 px-4 pr-12 font-bold text-navy-950 outline-none transition focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10"
+                          placeholder="Re-enter password"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowConfirmPassword((isVisible) => !isVisible)}
+                          className="absolute inset-y-0 right-0 inline-flex w-12 items-center justify-center text-lg text-slate-500 transition hover:text-teal-600"
+                          aria-label={showConfirmPassword ? "Hide confirm password" : "Show confirm password"}
+                          title={showConfirmPassword ? "Hide confirm password" : "Show confirm password"}
+                        >
+                          {showConfirmPassword ? "🙈" : "👁️"}
+                        </button>
+                      </div>
                     </label>
                   ) : null}
                 </>

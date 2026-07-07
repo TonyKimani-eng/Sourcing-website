@@ -15,18 +15,15 @@ import {
   PhoneAuthProvider,
   RecaptchaVerifier,
   sendEmailVerification,
-  sendSignInLinkToEmail,
-  sendPasswordResetEmail,
-  signInWithEmailAndPassword,
   signInWithCredential,
-  signInWithEmailLink,
   signOut as firebaseSignOut,
-  isSignInWithEmailLink
+  updateEmail,
+  updateProfile
 } from "firebase/auth";
 import { auth, isFirebaseConfigured } from "@/lib/firebase";
 
-type AuthMode = "signin" | "signup" | "reset";
-type SignupStep = "identifier" | "phone-code" | "email-link";
+type AuthMode = "signin" | "signup";
+type AuthStep = "phone" | "code" | "profile";
 
 type User = {
   name: string;
@@ -43,7 +40,7 @@ type AuthContextValue = {
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
-function getAuthErrorMessage(error: unknown, context: "email" | "phone" = "email") {
+function getAuthErrorMessage(error: unknown) {
   if (
     typeof error === "object" &&
     error !== null &&
@@ -51,30 +48,21 @@ function getAuthErrorMessage(error: unknown, context: "email" | "phone" = "email
     typeof error.code === "string"
   ) {
     const messages: Record<string, string> = {
-      "auth/email-already-in-use": "That email already has an account. Please sign in instead.",
       "auth/api-key-not-valid": "Firebase API key is not valid. Check NEXT_PUBLIC_FIREBASE_API_KEY.",
       "auth/app-not-authorized": "This website domain is not authorized in Firebase Authentication.",
+      "auth/billing-not-enabled": "Phone OTP needs Firebase billing enabled, or use a Firebase test phone number.",
       "auth/configuration-not-found": "Firebase Authentication is not enabled for this project.",
-      "auth/invalid-credential": "Email or password is incorrect.",
       "auth/invalid-email": "Please enter a valid email address.",
-      "auth/network-request-failed": "Could not reach Firebase. Check your internet connection.",
-      "auth/operation-not-allowed":
-        context === "phone"
-          ? "Phone sign-in is not enabled in Firebase. Enable Phone under Authentication > Sign-in method."
-          : "Email/password auth is not enabled in Firebase.",
-      "auth/provider-already-linked": "That phone number is already linked to this account.",
       "auth/invalid-phone-number": "Enter the phone number in international format, for example +254712345678.",
       "auth/invalid-verification-code": "The OTP code is incorrect. Please check it and try again.",
       "auth/missing-verification-code": "Enter the OTP code sent to your phone.",
+      "auth/network-request-failed": "Could not reach Firebase. Check your internet connection.",
+      "auth/operation-not-allowed": "Phone sign-in is not enabled in Firebase. Enable Phone under Authentication > Sign-in method.",
       "auth/quota-exceeded": "SMS limit reached. Please try again later.",
+      "auth/requires-recent-login": "Please sign in again before updating this account.",
       "auth/requests-from-referer-are-blocked": "This website domain is blocked by the Firebase API key settings.",
-      "auth/requires-recent-login": "Please sign in again before verifying this phone number.",
-      "auth/second-factor-already-in-use": "That phone number is already used by another account.",
       "auth/too-many-requests": "Too many attempts. Please try again later.",
-      "auth/user-disabled": "This account has been disabled.",
-      "auth/user-not-found": "No account exists for that email.",
-      "auth/weak-password": "Use a password with at least 6 characters.",
-      "auth/wrong-password": "Email or password is incorrect."
+      "auth/user-disabled": "This account has been disabled."
     };
 
     return messages[error.code] ?? `Authentication failed (${error.code}). Please try again.`;
@@ -83,11 +71,7 @@ function getAuthErrorMessage(error: unknown, context: "email" | "phone" = "email
   return "Authentication failed. Please try again.";
 }
 
-function isEmailIdentifier(value: string) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
-}
-
-function isPhoneIdentifier(value: string) {
+function isValidPhone(value: string) {
   return value.startsWith("+") && value.replace(/\D/g, "").length >= 8;
 }
 
@@ -101,33 +85,12 @@ function useAuthContext() {
   return context;
 }
 
-function PasswordVisibilityIcon({ isVisible }: { isVisible: boolean }) {
-  return (
-    <svg
-      aria-hidden="true"
-      className="h-5 w-5"
-      fill="none"
-      viewBox="0 0 24 24"
-      stroke="currentColor"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-    >
-      <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z" />
-      <circle cx="12" cy="12" r="3" />
-      {isVisible ? <path d="M4 20 20 4" /> : null}
-    </svg>
-  );
-}
-
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [mode, setMode] = useState<AuthMode>("signin");
-  const [signupStep, setSignupStep] = useState<SignupStep>("identifier");
+  const [step, setStep] = useState<AuthStep>("phone");
   const [verificationId, setVerificationId] = useState("");
   const [phoneForVerification, setPhoneForVerification] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [passwordResetStatus, setPasswordResetStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
   const [isOpen, setIsOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
@@ -141,7 +104,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(
         firebaseUser
           ? {
-              name: firebaseUser.displayName ?? firebaseUser.email?.split("@")[0] ?? "Customer",
+              name:
+                firebaseUser.displayName ??
+                firebaseUser.phoneNumber ??
+                firebaseUser.email?.split("@")[0] ??
+                "Customer",
               email: firebaseUser.email ?? "",
               emailVerified: firebaseUser.emailVerified,
               phone: firebaseUser.phoneNumber ?? ""
@@ -152,41 +119,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const resetAuthForm = useCallback(() => {
-    setSignupStep("identifier");
+    setStep("phone");
     setVerificationId("");
     setPhoneForVerification("");
-    setShowPassword(false);
-    setPasswordResetStatus("idle");
     setErrorMessage("");
     setIsSubmitting(false);
-  }, []);
-
-  useEffect(() => {
-    if (!auth || typeof window === "undefined" || !isSignInWithEmailLink(auth, window.location.href)) {
-      return;
-    }
-
-    const email = window.localStorage.getItem("teekaySignInEmail");
-
-    if (!email) {
-      setErrorMessage("Open the verification link on the same browser where you started signup.");
-      setMode("signup");
-      setSignupStep("email-link");
-      setIsOpen(true);
-      return;
-    }
-
-    void signInWithEmailLink(auth, email, window.location.href)
-      .then(() => {
-        window.localStorage.removeItem("teekaySignInEmail");
-        window.history.replaceState({}, document.title, window.location.pathname);
-      })
-      .catch((error) => {
-        setErrorMessage(getAuthErrorMessage(error, "email"));
-        setMode("signup");
-        setSignupStep("email-link");
-        setIsOpen(true);
-      });
   }, []);
 
   const openAuth = useCallback((nextMode: AuthMode = "signin") => {
@@ -195,7 +132,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsOpen(true);
   }, [resetAuthForm]);
 
-  const closeAuth = useCallback(async () => {
+  const closeAuth = useCallback(() => {
     resetAuthForm();
     setIsOpen(false);
   }, [resetAuthForm]);
@@ -215,117 +152,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [openAuth, signOut, user]
   );
 
-  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-
+  const sendPhoneCode = async (phone: string) => {
     if (!auth) {
       setErrorMessage("Firebase is not configured yet. Add your Firebase env vars first.");
       return;
     }
 
-    const activeAuth = auth;
-    const formData = new FormData(event.currentTarget);
-    const identifier = String(formData.get("identifier") ?? "").trim();
-    const email = String(formData.get("email") ?? "").trim();
-    const name = String(formData.get("name") ?? "").trim() || email.split("@")[0] || "Customer";
-    const phone = String(formData.get("phone") ?? "").trim();
-    const password = String(formData.get("password") ?? "");
-    const otp = String(formData.get("otp") ?? "").trim();
-
-    if (mode === "reset") {
-      if (!email) {
-        setErrorMessage("Enter your email address so we can send the reset link.");
-        return;
-      }
-
-      setErrorMessage("");
-      setIsSubmitting(true);
-      setPasswordResetStatus("sending");
-
-      try {
-        await sendPasswordResetEmail(activeAuth, email);
-        setPasswordResetStatus("sent");
-      } catch {
-        setPasswordResetStatus("error");
-      } finally {
-        setIsSubmitting(false);
-      }
-
-      return;
-    }
-
-    if (mode === "signup" && signupStep === "phone-code") {
-      if (!verificationId) {
-        setErrorMessage("Start signup again so we can verify your phone number.");
-        return;
-      }
-
-      if (!otp) {
-        setErrorMessage("Enter the OTP code sent to your phone.");
-        return;
-      }
-
-      setIsSubmitting(true);
-      setErrorMessage("");
-
-      try {
-        const credential = PhoneAuthProvider.credential(verificationId, otp);
-        await signInWithCredential(activeAuth, credential);
-        resetAuthForm();
-        setIsOpen(false);
-      } catch (error) {
-        setErrorMessage(getAuthErrorMessage(error, "phone"));
-      } finally {
-        setIsSubmitting(false);
-      }
-
-      return;
-    }
-
-    if (mode === "signup" && signupStep === "identifier") {
-      if (!identifier) {
-        setErrorMessage("Enter your email address or phone number.");
-        return;
-      }
-
-      setIsSubmitting(true);
-      setErrorMessage("");
-
-      try {
-        if (isEmailIdentifier(identifier)) {
-          const returnUrl = `${window.location.origin}${window.location.pathname}`;
-
-          await sendSignInLinkToEmail(activeAuth, identifier, {
-            url: returnUrl,
-            handleCodeInApp: true
-          });
-
-          window.localStorage.setItem("teekaySignInEmail", identifier);
-          setPhoneForVerification(identifier);
-          setSignupStep("email-link");
-        } else if (isPhoneIdentifier(identifier)) {
-          const verifier = new RecaptchaVerifier(activeAuth, "signup-recaptcha", {
-            size: "invisible"
-          });
-          const phoneProvider = new PhoneAuthProvider(activeAuth);
-          const nextVerificationId = await phoneProvider.verifyPhoneNumber(identifier, verifier);
-
-          setVerificationId(nextVerificationId);
-          setPhoneForVerification(identifier);
-          setSignupStep("phone-code");
-        } else {
-          setErrorMessage("Enter a valid email or an international phone number, for example +254712345678.");
-        }
-      } catch (error) {
-        setErrorMessage(getAuthErrorMessage(error, isPhoneIdentifier(identifier) ? "phone" : "email"));
-      } finally {
-        setIsSubmitting(false);
-      }
-
-      return;
-    }
-
-    if (!email) {
+    if (!isValidPhone(phone)) {
+      setErrorMessage("Enter the phone number in international format, for example +254712345678.");
       return;
     }
 
@@ -333,16 +167,109 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setErrorMessage("");
 
     try {
-      if (mode === "signin") {
-        await signInWithEmailAndPassword(activeAuth, email, password);
-        setIsOpen(false);
-      }
+      const verifier = new RecaptchaVerifier(auth, "auth-recaptcha", {
+        size: "invisible"
+      });
+      const phoneProvider = new PhoneAuthProvider(auth);
+      const nextVerificationId = await phoneProvider.verifyPhoneNumber(phone, verifier);
+
+      setVerificationId(nextVerificationId);
+      setPhoneForVerification(phone);
+      setStep("code");
     } catch (error) {
-      setErrorMessage(getAuthErrorMessage(error, mode === "signup" ? "phone" : "email"));
+      setErrorMessage(getAuthErrorMessage(error));
     } finally {
       setIsSubmitting(false);
     }
   };
+
+  const verifyPhoneCode = async (otp: string) => {
+    if (!auth || !verificationId) {
+      setErrorMessage("Start again so we can verify your phone number.");
+      return;
+    }
+
+    if (!otp) {
+      setErrorMessage("Enter the OTP code sent to your phone.");
+      return;
+    }
+
+    setIsSubmitting(true);
+    setErrorMessage("");
+
+    try {
+      const credential = PhoneAuthProvider.credential(verificationId, otp);
+      const result = await signInWithCredential(auth, credential);
+
+      if (!result.user.displayName) {
+        setStep("profile");
+        return;
+      }
+
+      resetAuthForm();
+      setIsOpen(false);
+    } catch (error) {
+      setErrorMessage(getAuthErrorMessage(error));
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const completeProfile = async (name: string, email: string) => {
+    if (!auth?.currentUser) {
+      setErrorMessage("Sign in again before completing your profile.");
+      return;
+    }
+
+    if (!name.trim()) {
+      setErrorMessage("Enter your full name.");
+      return;
+    }
+
+    setIsSubmitting(true);
+    setErrorMessage("");
+
+    try {
+      await updateProfile(auth.currentUser, { displayName: name.trim() });
+
+      if (email.trim()) {
+        await updateEmail(auth.currentUser, email.trim());
+        await sendEmailVerification(auth.currentUser);
+      }
+
+      resetAuthForm();
+      setIsOpen(false);
+    } catch (error) {
+      setErrorMessage(getAuthErrorMessage(error));
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    const formData = new FormData(event.currentTarget);
+    const phone = String(formData.get("phone") ?? "").trim();
+    const otp = String(formData.get("otp") ?? "").trim();
+    const name = String(formData.get("name") ?? "").trim();
+    const email = String(formData.get("email") ?? "").trim();
+
+    if (step === "phone") {
+      await sendPhoneCode(phone);
+      return;
+    }
+
+    if (step === "code") {
+      await verifyPhoneCode(otp);
+      return;
+    }
+
+    await completeProfile(name, email);
+  };
+
+  const title = mode === "signin" ? "Sign in to purchase" : "Create account";
+  const eyebrow = mode === "signin" ? "Welcome back" : "Phone verification";
 
   return (
     <AuthContext.Provider value={value}>
@@ -353,7 +280,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           role="dialog"
           aria-modal="true"
           aria-labelledby="auth-title"
-          onClick={() => void closeAuth()}
+          onClick={closeAuth}
         >
           <div
             className="w-full max-w-md rounded-lg bg-white p-5 shadow-soft sm:p-6"
@@ -361,20 +288,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           >
             <div className="flex items-start justify-between gap-4">
               <div>
-                <p className="text-xs font-black uppercase text-teal-600">
-                  {mode === "signin" ? "Welcome back" : mode === "reset" ? "Password help" : "Create account"}
-                </p>
+                <p className="text-xs font-black uppercase text-teal-600">{eyebrow}</p>
                 <h2 id="auth-title" className="mt-1 text-2xl font-black text-navy-950">
-                  {mode === "signin"
-                    ? "Sign in to purchase"
-                    : mode === "reset"
-                      ? "Reset your password"
-                      : "Sign up to purchase"}
+                  {step === "profile" ? "Complete your account" : title}
                 </h2>
               </div>
               <button
                 type="button"
-                onClick={() => void closeAuth()}
+                onClick={closeAuth}
                 className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-slate-100 text-xl font-black leading-none text-navy-950 transition hover:bg-ember-500 hover:text-white"
                 aria-label="Close sign in dialog"
               >
@@ -394,56 +315,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                   {errorMessage}
                 </div>
               ) : null}
-              {mode === "reset" ? (
-                <>
-                  <label className="grid gap-2">
-                    <span className="text-sm font-black text-navy-950">Email address</span>
-                    <input
-                      name="email"
-                      type="email"
-                      required
-                      autoComplete="email"
-                      className="min-h-12 rounded-lg border border-slate-200 px-4 font-bold text-navy-950 outline-none transition focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10"
-                      placeholder="you@example.com"
-                    />
-                  </label>
-                  {passwordResetStatus === "sent" ? (
-                    <div className="rounded-lg border border-teal-500/30 bg-teal-500/10 p-3 text-sm font-bold leading-6 text-teal-700">
-                      Reset link sent. Check your email.
-                    </div>
-                  ) : null}
-                  {passwordResetStatus === "error" ? (
-                    <div className="rounded-lg border border-ember-500/30 bg-ember-500/10 p-3 text-sm font-bold leading-6 text-ember-600">
-                      Could not send reset link. Check the email and try again.
-                    </div>
-                  ) : null}
-                </>
-              ) : null}
-              {mode === "signup" && signupStep === "identifier" ? (
+
+              {step === "phone" ? (
                 <label className="grid gap-2">
-                  <span className="text-sm font-black text-navy-950">Email or phone number</span>
+                  <span className="text-sm font-black text-navy-950">Phone number</span>
                   <input
-                    name="identifier"
-                    type="text"
+                    name="phone"
+                    type="tel"
                     required
-                    autoComplete="email tel"
+                    autoComplete="tel"
                     className="min-h-12 rounded-lg border border-slate-200 px-4 font-bold text-navy-950 outline-none transition focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10"
-                    placeholder="you@example.com or +254712345678"
+                    placeholder="+254712345678"
                   />
                 </label>
               ) : null}
-              {mode === "signup" && signupStep === "email-link" ? (
-                <div className="rounded-lg border border-teal-500/30 bg-teal-500/10 p-3 text-sm font-bold leading-6 text-teal-700">
-                  We sent a verification link to {phoneForVerification}. Open it on this device to finish signup.
-                </div>
-              ) : null}
-              {mode === "signup" && signupStep === "phone-code" ? (
+
+              {step === "code" ? (
                 <>
                   <div className="rounded-lg border border-teal-500/30 bg-teal-500/10 p-3 text-sm font-bold leading-6 text-teal-700">
-                    We sent a verification code to {phoneForVerification}. Enter it to verify your phone number.
+                    We sent a verification code to {phoneForVerification}. Enter it to continue.
                   </div>
                   <label className="grid gap-2">
-                    <span className="text-sm font-black text-navy-950">OTP code</span>
+                    <span className="text-sm font-black text-navy-950">Verification code</span>
                     <input
                       name="otp"
                       type="text"
@@ -456,90 +349,51 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                   </label>
                 </>
               ) : null}
-              {mode === "signin" ? (
+
+              {step === "profile" ? (
                 <>
                   <label className="grid gap-2">
-                    <span className="text-sm font-black text-navy-950">Email address</span>
+                    <span className="text-sm font-black text-navy-950">Full name</span>
+                    <input
+                      name="name"
+                      type="text"
+                      required
+                      autoComplete="name"
+                      className="min-h-12 rounded-lg border border-slate-200 px-4 font-bold text-navy-950 outline-none transition focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10"
+                      placeholder="Your name"
+                    />
+                  </label>
+                  <label className="grid gap-2">
+                    <span className="text-sm font-black text-navy-950">Email address optional</span>
                     <input
                       name="email"
                       type="email"
-                      required
                       autoComplete="email"
                       className="min-h-12 rounded-lg border border-slate-200 px-4 font-bold text-navy-950 outline-none transition focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10"
                       placeholder="you@example.com"
                     />
                   </label>
-                  <label className="grid gap-2">
-                    <span className="text-sm font-black text-navy-950">Password</span>
-                    <div className="relative">
-                      <input
-                        name="password"
-                        type={showPassword ? "text" : "password"}
-                        required
-                        autoComplete={mode === "signin" ? "current-password" : "new-password"}
-                        minLength={6}
-                        className="min-h-12 w-full rounded-lg border border-slate-200 px-4 pr-12 font-bold text-navy-950 outline-none transition focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10"
-                        placeholder="Minimum 6 characters"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword((isVisible) => !isVisible)}
-                        className="absolute inset-y-0 right-0 inline-flex w-12 items-center justify-center text-slate-500 transition hover:text-teal-600"
-                        aria-label={showPassword ? "Hide password" : "Show password"}
-                        title={showPassword ? "Hide password" : "Show password"}
-                      >
-                        <PasswordVisibilityIcon isVisible={showPassword} />
-                      </button>
-                    </div>
-                  </label>
-                  {mode === "signin" ? (
-                    <div className="flex flex-col gap-2 text-sm font-bold sm:flex-row sm:items-center sm:justify-between">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setMode("reset");
-                          setErrorMessage("");
-                          setPasswordResetStatus("idle");
-                          setShowPassword(false);
-                        }}
-                        className="self-start font-black text-teal-600 underline decoration-teal-500 decoration-2 underline-offset-4 transition hover:text-navy-950 disabled:cursor-not-allowed disabled:opacity-60"
-                      >
-                        Forgot password?
-                      </button>
-                    </div>
-                  ) : null}
                 </>
               ) : null}
-              <div id="signup-recaptcha" />
+
+              <div id="auth-recaptcha" />
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="mt-1 inline-flex min-h-12 items-center justify-center rounded-full bg-ember-500 px-5 text-sm font-black text-white transition hover:bg-navy-950"
+                className="mt-1 inline-flex min-h-12 items-center justify-center rounded-full bg-ember-500 px-5 text-sm font-black text-white transition hover:bg-navy-950 disabled:cursor-not-allowed disabled:opacity-70"
               >
                 {isSubmitting
                   ? "Please wait..."
-                  : mode === "reset"
-                    ? passwordResetStatus === "sending"
-                      ? "Sending..."
-                      : passwordResetStatus === "sent"
-                        ? "Send again"
-                        : "Send reset link"
-                    : mode === "signin"
-                    ? "Sign in"
-                    : signupStep === "phone-code"
-                      ? "Verify phone"
-                      : signupStep === "email-link"
-                        ? "Email sent"
-                        : "Next"}
+                  : step === "phone"
+                    ? "Continue"
+                    : step === "code"
+                      ? "Verify"
+                      : "Finish"}
               </button>
             </form>
 
             <div className="mt-5 border-t border-slate-200 pt-4 text-center text-sm font-bold text-slate-600">
-              {mode === "signin"
-                ? "New to Teekay?"
-                : mode === "reset"
-                  ? "Remember your password?"
-                  : "Already have an account?"}{" "}
+              {mode === "signin" ? "Need an account?" : "Already have an account?"}{" "}
               <button
                 type="button"
                 onClick={() => {
@@ -658,19 +512,18 @@ function AccountPanel({
         </div>
 
         <div className="mt-6 grid gap-3">
-          <AccountDetail label="Email" value={user.email || "Not available"} />
-          {user.email ? (
-            <EmailVerificationAction isVerified={user.emailVerified} />
-          ) : (
-            <AccountDetail label="Email status" value="Not added" />
-          )}
           <AccountDetail label="Phone" value={user.phone || "Not available"} />
           <AccountDetail
             label="Phone status"
             value={user.phone ? "Verified by OTP" : "Not verified"}
             tone={user.phone ? "success" : "warning"}
           />
-          {user.email ? <PasswordResetAction email={user.email} /> : null}
+          <AccountDetail label="Email" value={user.email || "Not added"} />
+          {user.email ? (
+            <EmailVerificationAction isVerified={user.emailVerified} />
+          ) : (
+            <AccountDetail label="Email status" value="Optional" />
+          )}
         </div>
 
         <div className="mt-6 flex flex-col gap-3 border-t border-slate-200 pt-5 sm:flex-row sm:justify-end">
@@ -743,51 +596,6 @@ function EmailVerificationAction({ isVerified }: { isVerified: boolean }) {
   );
 }
 
-function PasswordResetAction({ email }: { email: string }) {
-  const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
-
-  const sendResetEmail = async () => {
-    if (!auth || !email) {
-      setStatus("error");
-      return;
-    }
-
-    setStatus("sending");
-
-    try {
-      await sendPasswordResetEmail(auth, email);
-      setStatus("sent");
-    } catch {
-      setStatus("error");
-    }
-  };
-
-  return (
-    <div className="grid gap-2 rounded-lg border border-slate-200 p-3">
-      <span className="text-xs font-black uppercase text-slate-500">Password</span>
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <span className="rounded-md bg-slate-100 px-3 py-2 text-sm font-black leading-5 text-slate-700">
-          ********
-        </span>
-        <button
-          type="button"
-          onClick={() => void sendResetEmail()}
-          disabled={status === "sending" || status === "sent"}
-          className="inline-flex min-h-10 items-center justify-center rounded-full border border-slate-200 px-4 text-xs font-black text-navy-950 transition hover:border-teal-500 hover:text-teal-600 disabled:cursor-not-allowed disabled:opacity-60"
-        >
-          {status === "sending" ? "Sending..." : status === "sent" ? "Email sent" : "Reset password"}
-        </button>
-      </div>
-      {status === "sent" ? (
-        <span className="text-xs font-bold text-teal-700">Check your email for the reset link.</span>
-      ) : null}
-      {status === "error" ? (
-        <span className="text-xs font-bold text-ember-600">Could not send reset email. Try again.</span>
-      ) : null}
-    </div>
-  );
-}
-
 function AccountDetail({
   label,
   value,
@@ -825,25 +633,11 @@ export function PurchaseLink({
 }) {
   const { user, openAuth } = useAuthContext();
 
-  if (user?.emailVerified || user?.phone) {
+  if (user?.phone) {
     return (
       <a href={href} className={className}>
         {children}
       </a>
-    );
-  }
-
-  if (user) {
-    return (
-      <button
-        type="button"
-        onClick={() => {
-          window.alert("Please verify your email address from your account panel before purchasing.");
-        }}
-        className={className}
-      >
-        {children}
-      </button>
     );
   }
 

@@ -10,6 +10,7 @@ import {
   useMemo,
   useState
 } from "react";
+import { createPortal } from "react-dom";
 import {
   onAuthStateChanged,
   PhoneAuthProvider,
@@ -482,7 +483,11 @@ function AccountPanel({
   onClose: () => void;
   onSignOut: () => Promise<void>;
 }) {
-  return (
+  if (typeof document === "undefined") {
+    return null;
+  }
+
+  return createPortal(
     <div
       className="fixed inset-0 z-[100] overflow-y-auto bg-navy-950/75 px-4 py-6"
       role="dialog"
@@ -538,7 +543,8 @@ function AccountPanel({
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 

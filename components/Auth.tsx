@@ -238,6 +238,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         await sendEmailVerification(auth.currentUser);
       }
 
+      setUser({
+        name: name.trim(),
+        email: email.trim(),
+        emailVerified: false,
+        phone: auth.currentUser.phoneNumber ?? ""
+      });
       resetAuthForm();
       setIsOpen(false);
     } catch (error) {
@@ -353,6 +359,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
               {step === "profile" ? (
                 <>
+                  <div className="rounded-lg border border-teal-500/30 bg-teal-500/10 p-3 text-sm font-bold leading-6 text-teal-700">
+                    Phone verified. Add your name, and optionally add an email address.
+                  </div>
                   <label className="grid gap-2">
                     <span className="text-sm font-black text-navy-950">Full name</span>
                     <input
@@ -639,34 +648,44 @@ function EmailAccountAction({ user }: { user: User }) {
           </button>
         </div>
       ) : (
-        <span className="min-h-8 rounded-md bg-slate-100 px-3 py-2 text-sm font-black leading-5 text-slate-700">
-          {user.email || "Not added"}
-        </span>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <span className="min-h-10 min-w-0 flex-1 truncate rounded-md bg-slate-100 px-3 py-2 text-sm font-black leading-6 text-slate-700">
+            {user.email || "Not added"}
+          </span>
+          {user.email && !user.emailVerified ? (
+            <button
+              type="button"
+              onClick={() => void sendVerification()}
+              disabled={verifyStatus === "sending" || verifyStatus === "sent"}
+              className="inline-flex min-h-10 shrink-0 items-center justify-center rounded-full border border-slate-200 px-4 text-xs font-black text-navy-950 transition hover:border-teal-500 hover:text-teal-600 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {verifyStatus === "sending" ? "Sending..." : verifyStatus === "sent" ? "Email sent" : "Verify email"}
+            </button>
+          ) : null}
+        </div>
       )}
 
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <span
-          className={`rounded-md px-3 py-2 text-sm font-black leading-5 ${
-            user.emailVerified
-              ? "bg-teal-500/10 text-teal-700"
-              : user.email
-                ? "bg-ember-500/10 text-ember-600"
-                : "bg-slate-100 text-slate-700"
-          }`}
-        >
-          {user.emailVerified ? "Verified" : user.email ? "Not verified" : "Optional"}
-        </span>
-        {user.email && !user.emailVerified ? (
-          <button
-            type="button"
-            onClick={() => void sendVerification()}
-            disabled={verifyStatus === "sending" || verifyStatus === "sent"}
-            className="inline-flex min-h-10 items-center justify-center rounded-full border border-slate-200 px-4 text-xs font-black text-navy-950 transition hover:border-teal-500 hover:text-teal-600 disabled:cursor-not-allowed disabled:opacity-60"
+      <span
+        className={`rounded-md px-3 py-2 text-sm font-black leading-5 ${
+          user.emailVerified
+            ? "bg-teal-500/10 text-teal-700"
+            : user.email
+              ? "bg-ember-500/10 text-ember-600"
+              : "bg-slate-100 text-slate-700"
+        }`}
+      >
+        {user.emailVerified ? "Email verified" : user.email ? "Email not verified" : "Email is optional"}
+      </span>
+
+      {!user.email && !isEditing ? (
+        <button
+          type="button"
+          onClick={() => setIsEditing(true)}
+          className="inline-flex min-h-10 items-center justify-center rounded-full border border-slate-200 px-4 text-xs font-black text-navy-950 transition hover:border-teal-500 hover:text-teal-600"
           >
-            {verifyStatus === "sending" ? "Sending..." : verifyStatus === "sent" ? "Email sent" : "Verify email"}
-          </button>
-        ) : null}
-      </div>
+          Add email
+        </button>
+      ) : null}
 
       {saveStatus === "saved" || verifyStatus === "sent" ? (
         <span className="text-xs font-bold text-teal-700">Check your email, then sign in again.</span>

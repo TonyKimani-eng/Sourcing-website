@@ -484,14 +484,14 @@ function AccountPanel({
 }) {
   return (
     <div
-      className="fixed inset-0 z-[80] flex items-start justify-center bg-navy-950/75 px-4 py-6 sm:items-center"
+      className="fixed inset-0 z-[100] overflow-y-auto bg-navy-950/75 px-4 py-6"
       role="dialog"
       aria-modal="true"
       aria-labelledby="account-title"
       onClick={onClose}
     >
       <div
-        className="w-full max-w-md rounded-lg bg-white p-5 shadow-soft sm:p-6"
+        className="mx-auto my-0 w-full max-w-md rounded-lg bg-white p-5 shadow-soft sm:my-8 sm:p-6"
         onClick={(event) => event.stopPropagation()}
       >
         <div className="flex items-start justify-between gap-4">
@@ -518,12 +518,7 @@ function AccountPanel({
             value={user.phone ? "Verified by OTP" : "Not verified"}
             tone={user.phone ? "success" : "warning"}
           />
-          <AccountDetail label="Email" value={user.email || "Not added"} />
-          {user.email ? (
-            <EmailVerificationAction isVerified={user.emailVerified} />
-          ) : (
-            <AccountDetail label="Email status" value="Optional" />
-          )}
+          <EmailAccountAction user={user} />
         </div>
 
         <div className="mt-6 flex flex-col gap-3 border-t border-slate-200 pt-5 sm:flex-row sm:justify-end">
@@ -547,49 +542,133 @@ function AccountPanel({
   );
 }
 
-function EmailVerificationAction({ isVerified }: { isVerified: boolean }) {
-  const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
+function EmailAccountAction({ user }: { user: User }) {
+  const [isEditing, setIsEditing] = useState(!user.email);
+  const [emailValue, setEmailValue] = useState(user.email);
+  const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
+  const [verifyStatus, setVerifyStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
 
-  const sendVerification = async () => {
-    if (!auth?.currentUser) {
-      setStatus("error");
+  useEffect(() => {
+    setEmailValue(user.email);
+    setIsEditing(!user.email);
+    setSaveStatus("idle");
+    setVerifyStatus("idle");
+  }, [user.email]);
+
+  const saveEmail = async () => {
+    const nextEmail = emailValue.trim();
+
+    if (!auth?.currentUser || !nextEmail) {
+      setSaveStatus("error");
       return;
     }
 
-    setStatus("sending");
+    setSaveStatus("saving");
+    setVerifyStatus("idle");
 
     try {
+      await updateEmail(auth.currentUser, nextEmail);
       await sendEmailVerification(auth.currentUser);
-      setStatus("sent");
+      setSaveStatus("saved");
+      setVerifyStatus("sent");
+      setIsEditing(false);
     } catch {
-      setStatus("error");
+      setSaveStatus("error");
     }
   };
 
-  if (isVerified) {
-    return <AccountDetail label="Email status" value="Verified" tone="success" />;
-  }
+  const sendVerification = async () => {
+    if (!auth?.currentUser) {
+      setVerifyStatus("error");
+      return;
+    }
+
+    setVerifyStatus("sending");
+
+    try {
+      await sendEmailVerification(auth.currentUser);
+      setVerifyStatus("sent");
+    } catch {
+      setVerifyStatus("error");
+    }
+  };
 
   return (
-    <div className="grid gap-2 rounded-lg border border-slate-200 p-3">
-      <span className="text-xs font-black uppercase text-slate-500">Email status</span>
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <span className="rounded-md bg-ember-500/10 px-3 py-2 text-sm font-black leading-5 text-ember-600">
-          Not verified
-        </span>
-        <button
-          type="button"
-          onClick={() => void sendVerification()}
-          disabled={status === "sending" || status === "sent"}
-          className="inline-flex min-h-10 items-center justify-center rounded-full border border-slate-200 px-4 text-xs font-black text-navy-950 transition hover:border-teal-500 hover:text-teal-600 disabled:cursor-not-allowed disabled:opacity-60"
-        >
-          {status === "sending" ? "Sending..." : status === "sent" ? "Email sent" : "Verify email"}
-        </button>
+    <div className="grid gap-3 rounded-lg border border-slate-200 p-3">
+      <div className="flex items-center justify-between gap-3">
+        <span className="text-xs font-black uppercase text-slate-500">Email</span>
+        {user.email ? (
+          <button
+            type="button"
+            onClick={() => {
+              setIsEditing((current) => !current);
+              setSaveStatus("idle");
+            }}
+            className="text-xs font-black text-teal-600 underline decoration-teal-500 decoration-2 underline-offset-4 transition hover:text-navy-950"
+          >
+            {isEditing ? "Cancel" : "Edit"}
+          </button>
+        ) : null}
       </div>
-      {status === "sent" ? (
+
+      {isEditing ? (
+        <div className="grid gap-2">
+          <input
+            type="email"
+            value={emailValue}
+            onChange={(event) => {
+              setEmailValue(event.target.value);
+              setSaveStatus("idle");
+            }}
+            className="min-h-11 rounded-lg border border-slate-200 px-3 text-sm font-bold text-navy-950 outline-none transition focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10"
+            placeholder="you@example.com"
+          />
+          <button
+            type="button"
+            onClick={() => void saveEmail()}
+            disabled={saveStatus === "saving"}
+            className="inline-flex min-h-10 items-center justify-center rounded-full bg-navy-950 px-4 text-xs font-black text-white transition hover:bg-ember-500 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {saveStatus === "saving" ? "Saving..." : user.email ? "Save email" : "Add email"}
+          </button>
+        </div>
+      ) : (
+        <span className="min-h-8 rounded-md bg-slate-100 px-3 py-2 text-sm font-black leading-5 text-slate-700">
+          {user.email || "Not added"}
+        </span>
+      )}
+
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <span
+          className={`rounded-md px-3 py-2 text-sm font-black leading-5 ${
+            user.emailVerified
+              ? "bg-teal-500/10 text-teal-700"
+              : user.email
+                ? "bg-ember-500/10 text-ember-600"
+                : "bg-slate-100 text-slate-700"
+          }`}
+        >
+          {user.emailVerified ? "Verified" : user.email ? "Not verified" : "Optional"}
+        </span>
+        {user.email && !user.emailVerified ? (
+          <button
+            type="button"
+            onClick={() => void sendVerification()}
+            disabled={verifyStatus === "sending" || verifyStatus === "sent"}
+            className="inline-flex min-h-10 items-center justify-center rounded-full border border-slate-200 px-4 text-xs font-black text-navy-950 transition hover:border-teal-500 hover:text-teal-600 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {verifyStatus === "sending" ? "Sending..." : verifyStatus === "sent" ? "Email sent" : "Verify email"}
+          </button>
+        ) : null}
+      </div>
+
+      {saveStatus === "saved" || verifyStatus === "sent" ? (
         <span className="text-xs font-bold text-teal-700">Check your email, then sign in again.</span>
       ) : null}
-      {status === "error" ? (
+      {saveStatus === "error" ? (
+        <span className="text-xs font-bold text-ember-600">Could not save email. You may need to sign in again.</span>
+      ) : null}
+      {verifyStatus === "error" ? (
         <span className="text-xs font-bold text-ember-600">Could not send verification email. Try again.</span>
       ) : null}
     </div>

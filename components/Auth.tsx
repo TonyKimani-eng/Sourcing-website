@@ -133,10 +133,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsOpen(true);
   }, [resetAuthForm]);
 
-  const closeAuth = useCallback(() => {
+  const closeAuth = useCallback(async () => {
+    if (step === "profile" && auth?.currentUser && !auth.currentUser.displayName) {
+      await firebaseSignOut(auth);
+    }
+
     resetAuthForm();
     setIsOpen(false);
-  }, [resetAuthForm]);
+  }, [resetAuthForm, step]);
 
   const signOut = useCallback(async () => {
     if (auth) {
@@ -230,24 +234,52 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsSubmitting(true);
     setErrorMessage("");
 
+    const currentUser = auth.currentUser;
+    const nextName = name.trim();
+    const nextEmail = email.trim();
+
     try {
-      await updateProfile(auth.currentUser, { displayName: name.trim() });
-
-      if (email.trim()) {
-        await updateEmail(auth.currentUser, email.trim());
-        await sendEmailVerification(auth.currentUser);
-      }
-
+      await updateProfile(currentUser, { displayName: nextName });
       setUser({
-        name: name.trim(),
-        email: email.trim(),
+        name: nextName,
+        email: currentUser.email ?? "",
+        emailVerified: currentUser.emailVerified,
+        phone: currentUser.phoneNumber ?? ""
+      });
+    } catch (error) {
+      setErrorMessage(getAuthErrorMessage(error));
+      setIsSubmitting(false);
+      return;
+    }
+
+    if (nextEmail) {
+      try {
+        await updateEmail(currentUser, nextEmail);
+        await sendEmailVerification(currentUser);
+        setUser({
+          name: nextName,
+          email: nextEmail,
+          emailVerified: false,
+          phone: currentUser.phoneNumber ?? ""
+        });
+      } catch {
+        setErrorMessage(
+          "Name saved, but email could not be added. You can skip it for now or try adding it from the account panel."
+        );
+        setIsSubmitting(false);
+        return;
+      }
+    }
+
+    try {
+      setUser({
+        name: nextName,
+        email: nextEmail || currentUser.email || "",
         emailVerified: false,
-        phone: auth.currentUser.phoneNumber ?? ""
+        phone: currentUser.phoneNumber ?? ""
       });
       resetAuthForm();
       setIsOpen(false);
-    } catch (error) {
-      setErrorMessage(getAuthErrorMessage(error));
     } finally {
       setIsSubmitting(false);
     }

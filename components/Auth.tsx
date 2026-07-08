@@ -18,8 +18,8 @@ import {
   sendEmailVerification,
   signInWithCredential,
   signOut as firebaseSignOut,
-  updateEmail,
-  updateProfile
+  updateProfile,
+  verifyBeforeUpdateEmail
 } from "firebase/auth";
 import { auth, isFirebaseConfigured } from "@/lib/firebase";
 
@@ -253,29 +253,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     if (nextEmail) {
-      try {
-        await updateEmail(currentUser, nextEmail);
-        await sendEmailVerification(currentUser);
-        setUser({
-          name: nextName,
-          email: nextEmail,
-          emailVerified: false,
-          phone: currentUser.phoneNumber ?? ""
-        });
-      } catch {
-        setErrorMessage(
-          "Name saved, but email could not be added. You can skip it for now or try adding it from the account panel."
-        );
-        setIsSubmitting(false);
-        return;
-      }
+      await verifyBeforeUpdateEmail(currentUser, nextEmail).catch(() => undefined);
     }
 
     try {
       setUser({
         name: nextName,
-        email: nextEmail || currentUser.email || "",
-        emailVerified: false,
+        email: currentUser.email || "",
+        emailVerified: currentUser.emailVerified,
         phone: currentUser.phoneNumber ?? ""
       });
       resetAuthForm();
@@ -412,7 +397,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                       type="email"
                       autoComplete="email"
                       className="min-h-12 rounded-lg border border-slate-200 px-4 font-bold text-navy-950 outline-none transition focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10"
-                      placeholder="you@example.com"
+                      placeholder="Email is optional"
                     />
                   </label>
                 </>
@@ -614,8 +599,7 @@ function EmailAccountAction({ user }: { user: User }) {
     setVerifyStatus("idle");
 
     try {
-      await updateEmail(auth.currentUser, nextEmail);
-      await sendEmailVerification(auth.currentUser);
+      await verifyBeforeUpdateEmail(auth.currentUser, nextEmail);
       setSaveStatus("saved");
       setVerifyStatus("sent");
       setIsEditing(false);
@@ -668,7 +652,7 @@ function EmailAccountAction({ user }: { user: User }) {
               setSaveStatus("idle");
             }}
             className="min-h-11 rounded-lg border border-slate-200 px-3 text-sm font-bold text-navy-950 outline-none transition focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10"
-            placeholder="you@example.com"
+            placeholder="Email is optional"
           />
           <button
             type="button"
@@ -697,17 +681,15 @@ function EmailAccountAction({ user }: { user: User }) {
         </div>
       )}
 
-      <span
-        className={`rounded-md px-3 py-2 text-sm font-black leading-5 ${
-          user.emailVerified
-            ? "bg-teal-500/10 text-teal-700"
-            : user.email
-              ? "bg-ember-500/10 text-ember-600"
-              : "bg-slate-100 text-slate-700"
-        }`}
-      >
-        {user.emailVerified ? "Email verified" : user.email ? "Email not verified" : "Email is optional"}
-      </span>
+      {user.email ? (
+        <span
+          className={`rounded-md px-3 py-2 text-sm font-black leading-5 ${
+            user.emailVerified ? "bg-teal-500/10 text-teal-700" : "bg-ember-500/10 text-ember-600"
+          }`}
+        >
+          {user.emailVerified ? "Email verified" : "Email not verified"}
+        </span>
+      ) : null}
 
       {!user.email && !isEditing ? (
         <button
@@ -723,7 +705,7 @@ function EmailAccountAction({ user }: { user: User }) {
         <span className="text-xs font-bold text-teal-700">Check your email, then sign in again.</span>
       ) : null}
       {saveStatus === "error" ? (
-        <span className="text-xs font-bold text-ember-600">Could not save email. You may need to sign in again.</span>
+        <span className="text-xs font-bold text-ember-600">Could not send email verification. Try signing in again.</span>
       ) : null}
       {verifyStatus === "error" ? (
         <span className="text-xs font-bold text-ember-600">Could not send verification email. Try again.</span>

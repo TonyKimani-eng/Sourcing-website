@@ -131,6 +131,7 @@ export const siteContent = {
         name: "Apple iPhone XR",
         brand: "Apple",
         image: "/10%20X%20series/IPHONE%20XR%20.jpg",
+        colorOptions: ["White", "Black", "Blue", "Yellow", "Coral", "(PRODUCT)RED"],
         storageOptions: [
           { storage: "64", price: 27630 },
           { storage: "128", price: 30715 }
@@ -140,6 +141,7 @@ export const siteContent = {
         name: "Apple iPhone 11",
         brand: "Apple",
         image: "/11series/iphone%2011.jpg",
+        colorOptions: ["Black", "Green", "Yellow", "Purple", "White", "(PRODUCT)RED"],
         storageOptions: [
           { storage: "64", price: 29055 },
           { storage: "128", price: 32840 }
@@ -149,6 +151,7 @@ export const siteContent = {
         name: "Apple iPhone XS Max",
         brand: "Apple",
         image: "/10%20X%20series/iphone%20xs%20max.jpg",
+        colorOptions: ["Gold", "Silver", "Space Gray"],
         storageOptions: [
           { storage: "64", price: 26515 },
           { storage: "256", price: 30585 }
@@ -158,6 +161,7 @@ export const siteContent = {
         name: "Apple iPhone 11 Pro",
         brand: "Apple",
         image: "/11series/iphone%2011PRO.jpg",
+        colorOptions: ["Midnight Green", "Space Gray", "Silver", "Gold"],
         storageOptions: [
           { storage: "64", price: 35225 },
           { storage: "256", price: 39295 }
@@ -167,6 +171,7 @@ export const siteContent = {
         name: "Apple iPhone 11 Pro Max",
         brand: "Apple",
         image: "/11series/iphone%2011PROMAX.jpg",
+        colorOptions: ["Midnight Green", "Space Gray", "Silver", "Gold"],
         storageOptions: [
           { storage: "64", price: 39995 },
           { storage: "256", price: 44065 }
@@ -176,6 +181,7 @@ export const siteContent = {
         name: "Apple iPhone 12",
         brand: "Apple",
         image: "/12%20series/iphone12.jpg",
+        colorOptions: ["Black", "White", "Blue", "Green", "Purple", "(PRODUCT)RED"],
         storageOptions: [
           { storage: "64", price: 33540 },
           { storage: "128", price: 37960 }
@@ -185,6 +191,7 @@ export const siteContent = {
         name: "Apple iPhone 12 Pro",
         brand: "Apple",
         image: "/12%20series/iphone%2012PRO.jpg",
+        colorOptions: ["Graphite", "Silver", "Gold", "Pacific Blue"],
         storageOptions: [
           { storage: "128", price: 46385 },
           { storage: "256", price: 50390 }
@@ -194,6 +201,7 @@ export const siteContent = {
         name: "Apple iPhone 12 Pro Max",
         brand: "Apple",
         image: "/12%20series/iphone%2012PROMAX.jpg",
+        colorOptions: ["Graphite", "Silver", "Gold", "Pacific Blue"],
         storageOptions: [
           { storage: "128", price: 48160 },
           { storage: "256", price: 52515 },
@@ -204,6 +212,7 @@ export const siteContent = {
         name: "Apple iPhone 13",
         brand: "Apple",
         image: "/13%20series/IPHONE13.jpg",
+        colorOptions: ["Pink", "Blue", "Midnight", "Starlight", "Green", "(PRODUCT)RED"],
         storageOptions: [
           { storage: "128", price: 44375 },
           { storage: "256", price: 52930 }
@@ -213,6 +222,7 @@ export const siteContent = {
         name: "Apple iPhone 13 Pro",
         brand: "Apple",
         image: "/13%20series/%23ios15%20%23apple%20%23iphone13pro%20%23iphone13lineup%20%23ios%E2%80%A6.jpg",
+        colorOptions: ["Graphite", "Silver", "Gold", "Sierra Blue", "Alpine Green"],
         storageOptions: [
           { storage: "128", price: 56740 },
           { storage: "256", price: 62780 }
@@ -222,6 +232,7 @@ export const siteContent = {
         name: "Apple iPhone 13 Pro Max",
         brand: "Apple",
         image: "/13%20series/iphone%2013promax.jpg",
+        colorOptions: ["Graphite", "Silver", "Gold", "Sierra Blue", "Alpine Green"],
         storageOptions: [
           { storage: "128", price: 64750 },
           { storage: "256", price: 70790 },
@@ -232,6 +243,7 @@ export const siteContent = {
         name: "Apple iPhone 14",
         brand: "Apple",
         image: "/14series/iphone14.jpg",
+        colorOptions: ["Midnight", "Purple", "Starlight", "Blue", "(PRODUCT)RED"],
         storageOptions: [
           { storage: "128", price: 48445 }
         ]
@@ -240,6 +252,7 @@ export const siteContent = {
         name: "Apple iPhone 14 Plus",
         brand: "Apple",
         image: "/14series/iphone14plus.jpg",
+        colorOptions: ["Midnight", "Purple", "Starlight", "Blue", "(PRODUCT)RED"],
         storageOptions: [
           { storage: "128", price: 54615 },
           { storage: "256", price: 63870 }
@@ -249,6 +262,7 @@ export const siteContent = {
         name: "Apple iPhone 14 Pro",
         brand: "Apple",
         image: "/14series/iphone14pro.jpg",
+        colorOptions: ["Space Black", "Silver", "Gold", "Deep Purple"],
         storageOptions: [
           { storage: "128", price: 65320 },
           { storage: "256", price: 72760 },
@@ -259,6 +273,7 @@ export const siteContent = {
         name: "Apple iPhone 14 Pro Max",
         brand: "Apple",
         image: "/14series/iphone14promax.jpg",
+        colorOptions: ["Space Black", "Silver", "Gold", "Deep Purple"],
         storageOptions: [
           { storage: "128", price: 72085 },
           { storage: "256", price: 73225 },
@@ -270,6 +285,7 @@ export const siteContent = {
         name: "Apple iPhone 15",
         brand: "Apple",
         image: "/15%20series/iphone15.jpg",
+        colorOptions: ["Black", "Blue", "Green", "Yellow", "Pink"],
         storageOptions: [
           { storage: "128", price: 73500 },
           { storage: "256", price: 79890 }
@@ -279,6 +295,7 @@ export const siteContent = {
         name: "Apple iPhone 15 Plus",
         brand: "Apple",
         image: "/15%20series/iphone15plus.jpg",
+        colorOptions: ["Black", "Blue", "Green", "Yellow", "Pink"],
         storageOptions: [
           { storage: "128", price: 82690 },
           { storage: "256", price: 91180 }
@@ -288,6 +305,7 @@ export const siteContent = {
         name: "Apple iPhone 15 Pro",
         brand: "Apple",
         image: "/15%20series/iphone15pro.jpg",
+        colorOptions: ["Natural Titanium", "Blue Titanium", "White Titanium", "Black Titanium"],
         storageOptions: [
           { storage: "128", price: 77530 },
           { storage: "256", price: 84970 }
@@ -297,6 +315,7 @@ export const siteContent = {
         name: "Apple iPhone 15 Pro Max",
         brand: "Apple",
         image: "/15%20series/iphone%2015%20promax.jpg",
+        colorOptions: ["Natural Titanium", "Blue Titanium", "White Titanium", "Black Titanium"],
         storageOptions: [
           { storage: "256", price: 88960 },
           { storage: "512", price: 106200 },
@@ -307,6 +326,7 @@ export const siteContent = {
         name: "Apple iPhone 16",
         brand: "Apple",
         image: "/16%20series/iphone16.jpg",
+        colorOptions: ["Ultramarine", "Teal", "Pink", "White", "Black"],
         storageOptions: [
           { storage: "128", price: 88650 },
           { storage: "256", price: 97620 }
@@ -316,6 +336,7 @@ export const siteContent = {
         name: "Apple iPhone 16 Plus",
         brand: "Apple",
         image: "/16%20series/iphone16plus.jpg",
+        colorOptions: ["Ultramarine", "Teal", "Pink", "White", "Black"],
         storageOptions: [
           { storage: "128", price: 98890 },
           { storage: "256", price: 105500 }
@@ -325,6 +346,7 @@ export const siteContent = {
         name: "Apple iPhone 16 Pro",
         brand: "Apple",
         image: "/16%20series/iphone16pro.jpg",
+        colorOptions: ["Black Titanium", "Natural Titanium", "White Titanium", "Desert Titanium"],
         storageOptions: [
           { storage: "128", price: 109830 },
           { storage: "256", price: 120510 }
@@ -334,6 +356,7 @@ export const siteContent = {
         name: "Apple iPhone 16 Pro Max",
         brand: "Apple",
         image: "/16%20series/iphone%2016%20promax.jpg",
+        colorOptions: ["Black Titanium", "Natural Titanium", "White Titanium", "Desert Titanium"],
         storageOptions: [
           { storage: "256", price: 117500 },
           { storage: "512", price: 128880 }
@@ -343,6 +366,7 @@ export const siteContent = {
         name: "Apple iPhone 17",
         brand: "Apple",
         image: "/17%20series/iphone17.jpg",
+        colorOptions: ["Black", "White", "Sage Green", "Mist Blue", "Purple", "Pink"],
         storageOptions: [
           { storage: "256", price: 103475 }
         ]
@@ -351,6 +375,7 @@ export const siteContent = {
         name: "Apple iPhone 17 Pro",
         brand: "Apple",
         image: "/17%20series/iphone%2017PRO.jpg",
+        colorOptions: ["Cosmic Orange", "Deep Blue", "Silver", "Black Titanium"],
         storageOptions: [
           { storage: "256", price: 155444.3 },
           { storage: "512", price: 182347.3 }
@@ -360,6 +385,7 @@ export const siteContent = {
         name: "Apple iPhone 17 Pro Max",
         brand: "Apple",
         image: "/17%20series/iphone17%20promax.jpg",
+        colorOptions: ["Cosmic Orange", "Deep Blue", "Silver", "Black Titanium"],
         storageOptions: [
           { storage: "256", price: 174500 },
           { storage: "512", price: 202160 }

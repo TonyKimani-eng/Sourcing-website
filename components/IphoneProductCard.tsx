@@ -16,6 +16,7 @@ type IphoneProductCardProps = {
     brand: string;
     image: string;
     storageOptions: StorageOption[];
+    colorOptions?: string[];
   };
   whatsappUrl: string;
 };
@@ -45,6 +46,7 @@ function ProductPhoto({ src, alt }: { src: string; alt: string }) {
 
 export function IphoneProductCard({ product, whatsappUrl }: IphoneProductCardProps) {
   const [selectedStorage, setSelectedStorage] = useState(product.storageOptions[0]?.storage ?? "");
+  const [selectedColor, setSelectedColor] = useState(product.colorOptions?.[0] ?? "");
 
   const selectedOption = useMemo(
     () =>
@@ -54,7 +56,9 @@ export function IphoneProductCard({ product, whatsappUrl }: IphoneProductCardPro
   );
 
   const message = selectedOption
-    ? `Hello Teekay, I want to source ${product.name} ${formatStorage(selectedOption.storage)}.`
+    ? `Hello Teekay, I want to source ${product.name} ${formatStorage(selectedOption.storage)}${
+        selectedColor ? ` in ${selectedColor}` : ""
+      }.`
     : `Hello Teekay, I want to source ${product.name}.`;
 
   return (
@@ -92,6 +96,32 @@ export function IphoneProductCard({ product, whatsappUrl }: IphoneProductCardPro
             })}
           </div>
         </div>
+        {product.colorOptions?.length ? (
+          <div className="mt-4">
+            <p className="text-xs font-black uppercase text-slate-400">Color</p>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {product.colorOptions.map((color) => {
+                const isSelected = color === selectedColor;
+
+                return (
+                  <button
+                    type="button"
+                    className={`inline-flex min-h-9 items-center rounded-full border px-3 text-xs font-black transition ${
+                      isSelected
+                        ? "border-teal-600 bg-teal-600 text-white"
+                        : "border-slate-200 bg-[#f8fbff] text-navy-950 hover:border-teal-600"
+                    }`}
+                    aria-pressed={isSelected}
+                    onClick={() => setSelectedColor(color)}
+                    key={color}
+                  >
+                    {color}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        ) : null}
         <div className="mt-auto pt-5">
           <PurchaseLink
             href={`${whatsappUrl}?text=${encodeURIComponent(message)}`}

@@ -131,7 +131,7 @@ export const siteContent = {
         name: "Apple iPhone XR",
         brand: "Apple",
         image: "/10%20X%20series/IPHONE%20XR%20.jpg",
-        colorOptions: ["White", "Black", "Blue", "Yellow", "Coral", "(PRODUCT)RED"],
+        colorOptions: ["White", "Black", "Blue", "Yellow", "Coral"],
         storageOptions: [
           { storage: "64", price: 27630 },
           { storage: "128", price: 30715 }
@@ -141,7 +141,7 @@ export const siteContent = {
         name: "Apple iPhone 11",
         brand: "Apple",
         image: "/11series/iphone%2011.jpg",
-        colorOptions: ["Black", "Green", "Yellow", "Purple", "White", "(PRODUCT)RED"],
+        colorOptions: ["Black", "Green", "Yellow", "Purple", "White"],
         storageOptions: [
           { storage: "64", price: 29055 },
           { storage: "128", price: 32840 }
@@ -181,7 +181,7 @@ export const siteContent = {
         name: "Apple iPhone 12",
         brand: "Apple",
         image: "/12%20series/iphone12.jpg",
-        colorOptions: ["Black", "White", "Blue", "Green", "Purple", "(PRODUCT)RED"],
+        colorOptions: ["Black", "White", "Blue", "Green", "Purple"],
         storageOptions: [
           { storage: "64", price: 33540 },
           { storage: "128", price: 37960 }
@@ -212,7 +212,7 @@ export const siteContent = {
         name: "Apple iPhone 13",
         brand: "Apple",
         image: "/13%20series/IPHONE13.jpg",
-        colorOptions: ["Pink", "Blue", "Midnight", "Starlight", "Green", "(PRODUCT)RED"],
+        colorOptions: ["Pink", "Blue", "Midnight", "Starlight", "Green"],
         storageOptions: [
           { storage: "128", price: 44375 },
           { storage: "256", price: 52930 }
@@ -243,7 +243,7 @@ export const siteContent = {
         name: "Apple iPhone 14",
         brand: "Apple",
         image: "/14series/iphone14.jpg",
-        colorOptions: ["Midnight", "Purple", "Starlight", "Blue", "(PRODUCT)RED"],
+        colorOptions: ["Midnight", "Purple", "Starlight", "Blue"],
         storageOptions: [
           { storage: "128", price: 48445 }
         ]
@@ -252,7 +252,7 @@ export const siteContent = {
         name: "Apple iPhone 14 Plus",
         brand: "Apple",
         image: "/14series/iphone14plus.jpg",
-        colorOptions: ["Midnight", "Purple", "Starlight", "Blue", "(PRODUCT)RED"],
+        colorOptions: ["Midnight", "Purple", "Starlight", "Blue"],
         storageOptions: [
           { storage: "128", price: 54615 },
           { storage: "256", price: 63870 }

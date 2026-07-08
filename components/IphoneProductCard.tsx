@@ -47,6 +47,7 @@ function ProductPhoto({ src, alt }: { src: string; alt: string }) {
 export function IphoneProductCard({ product, whatsappUrl }: IphoneProductCardProps) {
   const [selectedStorage, setSelectedStorage] = useState(product.storageOptions[0]?.storage ?? "");
   const [selectedColor, setSelectedColor] = useState(product.colorOptions?.[0] ?? "");
+  const [showColorOptions, setShowColorOptions] = useState(false);
 
   const selectedOption = useMemo(
     () =>
@@ -87,7 +88,10 @@ export function IphoneProductCard({ product, whatsappUrl }: IphoneProductCardPro
                       : "border-slate-200 bg-[#f8fbff] text-navy-950 hover:border-ember-500"
                   }`}
                   aria-pressed={isSelected}
-                  onClick={() => setSelectedStorage(option.storage)}
+                  onClick={() => {
+                    setSelectedStorage(option.storage);
+                    setShowColorOptions(Boolean(product.colorOptions?.length));
+                  }}
                   key={option.storage}
                 >
                   {formatStorage(option.storage)}
@@ -97,9 +101,16 @@ export function IphoneProductCard({ product, whatsappUrl }: IphoneProductCardPro
           </div>
         </div>
         {product.colorOptions?.length ? (
-          <div className="mt-4">
-            <p className="text-xs font-black uppercase text-slate-400">Color</p>
-            <div className="mt-2 flex flex-wrap gap-2">
+          <div className="mt-3">
+            <button
+              type="button"
+              className="inline-flex min-h-8 items-center rounded-full border border-slate-200 bg-[#f8fbff] px-3 text-xs font-black text-navy-950 transition hover:border-teal-600"
+              onClick={() => setShowColorOptions((isOpen) => !isOpen)}
+            >
+              Color: {selectedColor}
+            </button>
+            {showColorOptions ? (
+              <div className="mt-2 flex flex-wrap gap-2 rounded-lg border border-slate-100 bg-slate-50 p-2">
               {product.colorOptions.map((color) => {
                 const isSelected = color === selectedColor;
 
@@ -112,14 +123,18 @@ export function IphoneProductCard({ product, whatsappUrl }: IphoneProductCardPro
                         : "border-slate-200 bg-[#f8fbff] text-navy-950 hover:border-teal-600"
                     }`}
                     aria-pressed={isSelected}
-                    onClick={() => setSelectedColor(color)}
+                    onClick={() => {
+                      setSelectedColor(color);
+                      setShowColorOptions(false);
+                    }}
                     key={color}
                   >
                     {color}
                   </button>
                 );
               })}
-            </div>
+              </div>
+            ) : null}
           </div>
         ) : null}
         <div className="mt-auto pt-5">

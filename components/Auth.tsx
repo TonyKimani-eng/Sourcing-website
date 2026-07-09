@@ -28,6 +28,7 @@ import {
 } from "@/lib/inquiries";
 import { siteContent } from "@/data/site";
 import { isAdminPhone } from "@/lib/admin";
+import { routePath } from "@/data/paths";
 
 type AuthMode = "signin" | "signup";
 type AuthStep = "phone" | "code" | "profile";
@@ -543,7 +544,7 @@ export function AuthButtons({ compact = false }: { compact?: boolean }) {
       <div className="relative flex min-w-0 items-center gap-2">
         {isAdminPhone(user.phone) ? (
           <a
-            href="/admin/"
+            href={routePath("/admin")}
             className="inline-flex min-h-10 min-w-0 shrink-0 items-center rounded-full bg-gold-400 px-3 text-xs font-black text-navy-950 transition hover:bg-white sm:px-4"
           >
             Admin

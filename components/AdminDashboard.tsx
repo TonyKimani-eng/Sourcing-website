@@ -12,6 +12,7 @@ import {
   updateInquiryStatus
 } from "@/lib/admin";
 import { InquiryStatus } from "@/lib/inquiries";
+import { routePath } from "@/data/paths";
 
 const statuses: InquiryStatus[] = ["New", "Contacted", "Quoted", "Paid", "Shipped", "Completed"];
 
@@ -165,7 +166,7 @@ export function AdminDashboard() {
       <main className="min-h-screen bg-[#f8fbff] text-navy-950">
         <section className="bg-navy-950 py-5 text-white">
           <Container className="flex items-center justify-between gap-4">
-            <Link href="/" className="text-sm font-black text-white">
+            <Link href={routePath("/")} className="text-sm font-black text-white">
               Teekay Admin
             </Link>
             <AuthButtons compact />
@@ -196,7 +197,7 @@ export function AdminDashboard() {
       <main className="min-h-screen bg-[#f8fbff] text-navy-950">
         <section className="bg-navy-950 py-5 text-white">
           <Container className="flex items-center justify-between gap-4">
-            <Link href="/" className="text-sm font-black text-white">
+            <Link href={routePath("/")} className="text-sm font-black text-white">
               Teekay Admin
             </Link>
             <AuthButtons compact />
@@ -220,7 +221,7 @@ export function AdminDashboard() {
       <section className="sticky top-0 z-40 border-b border-white/10 bg-navy-950/95 text-white shadow-soft backdrop-blur">
         <Container className="flex min-h-16 items-center justify-between gap-4">
           <div>
-            <Link href="/" className="text-sm font-black text-white">
+            <Link href={routePath("/")} className="text-sm font-black text-white">
               Teekay Admin
             </Link>
             <p className="mt-1 hidden text-xs font-bold text-white/60 sm:block">Signed in as {user.phone}</p>

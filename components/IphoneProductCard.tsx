@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Image from "next/image";
-import { PurchaseLink } from "@/components/Auth";
+import { useCart } from "@/components/Auth";
 import { assetPath } from "@/data/paths";
 
 type StorageOption = {
@@ -18,7 +18,6 @@ type IphoneProductCardProps = {
     storageOptions: StorageOption[];
     colorOptions?: string[];
   };
-  whatsappUrl: string;
 };
 
 function formatKes(price: number) {
@@ -44,10 +43,12 @@ function ProductPhoto({ src, alt }: { src: string; alt: string }) {
   );
 }
 
-export function IphoneProductCard({ product, whatsappUrl }: IphoneProductCardProps) {
+export function IphoneProductCard({ product }: IphoneProductCardProps) {
+  const { addItem } = useCart();
   const [selectedStorage, setSelectedStorage] = useState(product.storageOptions[0]?.storage ?? "");
   const [selectedColor, setSelectedColor] = useState(product.colorOptions?.[0] ?? "");
   const [showColorOptions, setShowColorOptions] = useState(false);
+  const [quantity, setQuantity] = useState(1);
 
   const selectedOption = useMemo(
     () =>
@@ -55,12 +56,6 @@ export function IphoneProductCard({ product, whatsappUrl }: IphoneProductCardPro
       product.storageOptions[0],
     [product.storageOptions, selectedStorage]
   );
-
-  const message = selectedOption
-    ? `Hello Teekay, I want to source ${product.name} ${formatStorage(selectedOption.storage)}${
-        selectedColor ? ` in ${selectedColor}` : ""
-      }.`
-    : `Hello Teekay, I want to source ${product.name}.`;
 
   return (
     <article className="group flex min-w-0 flex-col overflow-hidden rounded-lg border border-slate-100 bg-white shadow-soft transition hover:-translate-y-1 hover:border-ember-500/30">
@@ -137,28 +132,52 @@ export function IphoneProductCard({ product, whatsappUrl }: IphoneProductCardPro
             ) : null}
           </div>
         ) : null}
+        <div className="mt-4">
+          <p className="text-xs font-black uppercase text-slate-400">Quantity</p>
+          <div className="mt-2 inline-flex overflow-hidden rounded-full border border-slate-200 bg-white">
+            <button
+              type="button"
+              onClick={() => setQuantity((current) => Math.max(1, current - 1))}
+              className="inline-flex h-9 w-9 items-center justify-center text-lg font-black text-navy-950 transition hover:bg-slate-100"
+            >
+              -
+            </button>
+            <input
+              type="number"
+              min={1}
+              value={quantity}
+              onChange={(event) => setQuantity(Math.max(1, Number(event.target.value) || 1))}
+              className="h-9 w-14 border-x border-slate-200 text-center text-sm font-black text-navy-950 outline-none"
+            />
+            <button
+              type="button"
+              onClick={() => setQuantity((current) => current + 1)}
+              className="inline-flex h-9 w-9 items-center justify-center text-lg font-black text-navy-950 transition hover:bg-slate-100"
+            >
+              +
+            </button>
+          </div>
+        </div>
         <div className="mt-auto pt-5">
-          <PurchaseLink
-            href={`${whatsappUrl}?text=${encodeURIComponent(message)}`}
-            inquiry={
-              selectedOption
-                ? {
-                    productName: product.name,
-                    productCategory: "iPhones",
-                    storage: formatStorage(selectedOption.storage),
-                    color: selectedColor,
-                    priceEstimate: selectedOption.price
-                  }
-                : {
-                    productName: product.name,
-                    productCategory: "iPhones",
-                    color: selectedColor
-                  }
-            }
+          <button
+            type="button"
+            onClick={() => {
+              if (!selectedOption) {
+                return;
+              }
+
+              addItem({
+                productName: product.name,
+                storage: formatStorage(selectedOption.storage),
+                color: selectedColor,
+                unitPrice: selectedOption.price,
+                quantity
+              });
+            }}
             className="inline-flex min-h-10 w-full items-center justify-center rounded-full bg-navy-950 px-4 text-sm font-black text-white transition hover:bg-ember-500"
           >
-            Ask supplier
-          </PurchaseLink>
+            Add to cart
+          </button>
         </div>
       </div>
     </article>

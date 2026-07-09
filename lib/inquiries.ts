@@ -16,6 +16,15 @@ export type InquiryInput = {
   storage?: string;
   color?: string;
   priceEstimate?: number;
+  quantity?: number;
+  orderItems?: Array<{
+    productName: string;
+    storage: string;
+    color: string;
+    quantity: number;
+    unitPrice: number;
+    subtotal: number;
+  }>;
 };
 
 export type SavedInquiry = InquiryInput & {

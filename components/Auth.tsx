@@ -28,6 +28,7 @@ import {
   saveInquiry,
   subscribeToUserInquiries
 } from "@/lib/inquiries";
+import { siteContent } from "@/data/site";
 
 type AuthMode = "signin" | "signup";
 type AuthStep = "phone" | "code" | "profile";
@@ -47,6 +48,27 @@ type AuthContextValue = {
 };
 
 const AuthContext = createContext<AuthContextValue | null>(null);
+
+export type CartItem = {
+  id: string;
+  productName: string;
+  storage: string;
+  color: string;
+  unitPrice: number;
+  quantity: number;
+};
+
+type CartContextValue = {
+  items: CartItem[];
+  itemCount: number;
+  total: number;
+  addItem: (item: Omit<CartItem, "id">) => void;
+  updateQuantity: (id: string, quantity: number) => void;
+  removeItem: (id: string) => void;
+  clearCart: () => void;
+};
+
+const CartContext = createContext<CartContextValue | null>(null);
 
 function getAuthErrorMessage(error: unknown) {
   if (
@@ -93,8 +115,19 @@ function useAuthContext() {
   return context;
 }
 
+export function useCart() {
+  const context = useContext(CartContext);
+
+  if (!context) {
+    throw new Error("Cart components must be used inside AuthProvider");
+  }
+
+  return context;
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [mode, setMode] = useState<AuthMode>("signin");
   const [step, setStep] = useState<AuthStep>("phone");
   const [verificationId, setVerificationId] = useState("");
@@ -164,6 +197,45 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }),
     [openAuth, signOut, user]
   );
+
+  const cartValue = useMemo<CartContextValue>(() => {
+    const itemCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
+    const total = cartItems.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0);
+
+    return {
+      items: cartItems,
+      itemCount,
+      total,
+      addItem: (item) => {
+        const id = `${item.productName}__${item.storage}__${item.color}`;
+
+        setCartItems((currentItems) => {
+          const existingItem = currentItems.find((currentItem) => currentItem.id === id);
+
+          if (existingItem) {
+            return currentItems.map((currentItem) =>
+              currentItem.id === id
+                ? { ...currentItem, quantity: currentItem.quantity + item.quantity }
+                : currentItem
+            );
+          }
+
+          return [...currentItems, { ...item, id }];
+        });
+      },
+      updateQuantity: (id, quantity) => {
+        setCartItems((currentItems) =>
+          currentItems
+            .map((item) => (item.id === id ? { ...item, quantity: Math.max(1, quantity) } : item))
+            .filter((item) => item.quantity > 0)
+        );
+      },
+      removeItem: (id) => {
+        setCartItems((currentItems) => currentItems.filter((item) => item.id !== id));
+      },
+      clearCart: () => setCartItems([])
+    };
+  }, [cartItems]);
 
   const sendPhoneCode = async (phone: string) => {
     if (!auth) {
@@ -307,6 +379,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   return (
     <AuthContext.Provider value={value}>
+      <CartContext.Provider value={cartValue}>
       {children}
       {isOpen ? (
         <div
@@ -445,23 +518,46 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           </div>
         </div>
       ) : null}
+      </CartContext.Provider>
     </AuthContext.Provider>
   );
 }
 
 export function AuthButtons({ compact = false }: { compact?: boolean }) {
   const { user, openAuth, signOut } = useAuthContext();
+  const { itemCount } = useCart();
   const [isAccountOpen, setIsAccountOpen] = useState(false);
+  const [isRequestsOpen, setIsRequestsOpen] = useState(false);
+  const [isCartOpen, setIsCartOpen] = useState(false);
 
   useEffect(() => {
     if (!user) {
       setIsAccountOpen(false);
+      setIsRequestsOpen(false);
     }
   }, [user]);
 
   if (user) {
     return (
       <div className="relative flex min-w-0 items-center gap-2">
+        <button
+          type="button"
+          onClick={() => setIsCartOpen(true)}
+          className="inline-flex min-h-10 min-w-0 shrink-0 items-center rounded-full border border-white/20 px-3 text-xs font-black text-white transition hover:border-gold-400 hover:text-gold-400 sm:px-4"
+          aria-haspopup="dialog"
+          aria-expanded={isCartOpen}
+        >
+          Cart{itemCount ? ` (${itemCount})` : ""}
+        </button>
+        <button
+          type="button"
+          onClick={() => setIsRequestsOpen(true)}
+          className="inline-flex min-h-10 min-w-0 shrink-0 items-center rounded-full border border-white/20 px-3 text-xs font-black text-white transition hover:border-gold-400 hover:text-gold-400 sm:px-4"
+          aria-haspopup="dialog"
+          aria-expanded={isRequestsOpen}
+        >
+          Requests
+        </button>
         <button
           type="button"
           onClick={() => setIsAccountOpen(true)}
@@ -484,12 +580,23 @@ export function AuthButtons({ compact = false }: { compact?: boolean }) {
             }}
           />
         ) : null}
+        {isRequestsOpen ? (
+          <RequestsPanel userId={user.uid} onClose={() => setIsRequestsOpen(false)} />
+        ) : null}
+        {isCartOpen ? <CartPanel onClose={() => setIsCartOpen(false)} /> : null}
       </div>
     );
   }
 
   return (
     <div className="flex shrink-0 items-center gap-2">
+      <button
+        type="button"
+        onClick={() => setIsCartOpen(true)}
+        className="inline-flex min-h-10 items-center justify-center rounded-full border border-white/20 px-3 text-xs font-black text-white transition hover:border-gold-400 hover:text-gold-400 sm:px-4"
+      >
+        Cart{itemCount ? ` (${itemCount})` : ""}
+      </button>
       <button
         type="button"
         onClick={() => openAuth("signin")}
@@ -506,7 +613,183 @@ export function AuthButtons({ compact = false }: { compact?: boolean }) {
       >
         Sign up
       </button>
+      {isCartOpen ? <CartPanel onClose={() => setIsCartOpen(false)} /> : null}
     </div>
+  );
+}
+
+function CartPanel({ onClose }: { onClose: () => void }) {
+  const { user, openAuth } = useAuthContext();
+  const { items, total, updateQuantity, removeItem, clearCart } = useCart();
+  const [isCheckingOut, setIsCheckingOut] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+
+  if (typeof document === "undefined") {
+    return null;
+  }
+
+  const checkoutMessage = `Hello Teekay, I want to order these iPhones:\n\n${items
+    .map(
+      (item, index) =>
+        `${index + 1}. ${item.productName}\nStorage: ${item.storage}\nColor: ${item.color}\nQuantity: ${
+          item.quantity
+        }\nUnit price: ${formatKes(item.unitPrice)}\nSubtotal: ${formatKes(item.unitPrice * item.quantity)}`
+    )
+    .join("\n\n")}\n\nTotal: ${formatKes(total)}\n\nPlease confirm availability and final invoice.`;
+
+  const checkout = async () => {
+    if (!items.length) {
+      return;
+    }
+
+    if (!user?.phone) {
+      onClose();
+      openAuth("signin");
+      return;
+    }
+
+    setIsCheckingOut(true);
+    setErrorMessage("");
+
+    try {
+      await saveInquiry(
+        {
+          productName: "iPhone cart order",
+          productCategory: "iPhones",
+          priceEstimate: total,
+          quantity: items.reduce((sum, item) => sum + item.quantity, 0),
+          orderItems: items.map((item) => ({
+            productName: item.productName,
+            storage: item.storage,
+            color: item.color,
+            quantity: item.quantity,
+            unitPrice: item.unitPrice,
+            subtotal: item.unitPrice * item.quantity
+          }))
+        },
+        {
+          userId: user.uid,
+          customerName: user.name,
+          customerPhone: user.phone,
+          customerEmail: user.email
+        }
+      );
+    } catch (error) {
+      console.error("Could not save cart inquiry", error);
+      setErrorMessage("WhatsApp will still open. Request history may not update.");
+    } finally {
+      clearCart();
+      window.location.href = `${siteContent.brand.whatsappUrl}?text=${encodeURIComponent(checkoutMessage)}`;
+    }
+  };
+
+  return createPortal(
+    <div
+      className="fixed inset-0 z-[100] overflow-y-auto bg-navy-950/75 px-4 py-6"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="cart-title"
+      onClick={onClose}
+    >
+      <div
+        className="mx-auto my-0 w-full max-w-lg rounded-lg bg-white p-5 shadow-soft sm:my-8 sm:p-6"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <p className="text-xs font-black uppercase text-teal-600">iPhone order</p>
+            <h2 id="cart-title" className="mt-1 text-2xl font-black text-navy-950">
+              Cart
+            </h2>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-slate-100 text-xl font-black leading-none text-navy-950 transition hover:bg-ember-500 hover:text-white"
+            aria-label="Close cart"
+          >
+            x
+          </button>
+        </div>
+
+        <div className="mt-6 grid gap-3">
+          {items.length ? (
+            items.map((item) => (
+              <div className="grid gap-3 rounded-lg border border-slate-200 bg-[#f8fbff] p-3" key={item.id}>
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-black text-navy-950">{item.productName}</p>
+                    <p className="mt-1 text-xs font-bold text-slate-500">
+                      {item.storage} / {item.color}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => removeItem(item.id)}
+                    className="shrink-0 text-xs font-black text-ember-500 underline decoration-ember-500 decoration-2 underline-offset-4"
+                  >
+                    Remove
+                  </button>
+                </div>
+                <div className="flex items-center justify-between gap-3">
+                  <div className="inline-flex overflow-hidden rounded-full border border-slate-200 bg-white">
+                    <button
+                      type="button"
+                      onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                      className="inline-flex h-9 w-9 items-center justify-center text-lg font-black text-navy-950 transition hover:bg-slate-100"
+                    >
+                      -
+                    </button>
+                    <span className="inline-flex h-9 min-w-10 items-center justify-center border-x border-slate-200 px-3 text-sm font-black text-navy-950">
+                      {item.quantity}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                      className="inline-flex h-9 w-9 items-center justify-center text-lg font-black text-navy-950 transition hover:bg-slate-100"
+                    >
+                      +
+                    </button>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-xs font-bold text-slate-500">{formatKes(item.unitPrice)} each</p>
+                    <p className="text-sm font-black text-navy-950">
+                      {formatKes(item.unitPrice * item.quantity)}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ))
+          ) : (
+            <span className="rounded-md bg-slate-100 px-3 py-2 text-sm font-black text-slate-600">
+              Your cart is empty.
+            </span>
+          )}
+        </div>
+
+        {errorMessage ? (
+          <p className="mt-4 rounded-md bg-ember-500/10 px-3 py-2 text-sm font-black text-ember-600">
+            {errorMessage}
+          </p>
+        ) : null}
+
+        <div className="mt-6 border-t border-slate-200 pt-5">
+          <div className="flex items-center justify-between gap-4">
+            <span className="text-sm font-black uppercase text-slate-500">Total</span>
+            <span className="text-2xl font-black text-ember-500">{formatKes(total)}</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => void checkout()}
+            disabled={!items.length || isCheckingOut}
+            className="mt-4 inline-flex min-h-11 w-full items-center justify-center rounded-full bg-ember-500 px-5 text-sm font-black text-white transition hover:bg-navy-950 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {isCheckingOut ? "Opening WhatsApp..." : user?.phone ? "Checkout on WhatsApp" : "Sign in to checkout"}
+          </button>
+        </div>
+      </div>
+    </div>,
+    document.body
   );
 }
 
@@ -560,7 +843,6 @@ function AccountPanel({
             tone={user.phone ? "success" : "warning"}
           />
           <EmailAccountAction user={user} />
-          <MyRequests userId={user.uid} />
         </div>
 
         <div className="mt-6 flex flex-col gap-3 border-t border-slate-200 pt-5 sm:flex-row sm:justify-end">
@@ -589,7 +871,7 @@ function formatKes(value: number) {
   return `KSh ${Math.round(value).toLocaleString("en-KE")}`;
 }
 
-function MyRequests({ userId }: { userId: string }) {
+function RequestsPanel({ userId, onClose }: { userId: string; onClose: () => void }) {
   const [requests, setRequests] = useState<SavedInquiry[]>([]);
   const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
 
@@ -606,53 +888,84 @@ function MyRequests({ userId }: { userId: string }) {
     );
   }, [userId]);
 
-  return (
-    <div className="grid gap-3 rounded-lg border border-slate-200 p-3">
-      <div>
-        <span className="text-xs font-black uppercase text-slate-500">My requests</span>
-        <p className="mt-1 text-sm font-bold leading-6 text-slate-500">
-          Products you asked Teekay to source.
-        </p>
-      </div>
+  if (typeof document === "undefined") {
+    return null;
+  }
 
-      {status === "loading" ? (
-        <span className="rounded-md bg-slate-100 px-3 py-2 text-sm font-black text-slate-600">
-          Loading requests...
-        </span>
-      ) : null}
-
-      {status === "error" ? (
-        <span className="rounded-md bg-ember-500/10 px-3 py-2 text-sm font-black text-ember-600">
-          Could not load requests. Check Firestore rules.
-        </span>
-      ) : null}
-
-      {status === "ready" && requests.length === 0 ? (
-        <span className="rounded-md bg-slate-100 px-3 py-2 text-sm font-black text-slate-600">
-          No requests yet.
-        </span>
-      ) : null}
-
-      {requests.slice(0, 4).map((request) => (
-        <div className="grid gap-2 rounded-lg bg-[#f8fbff] p-3" key={request.id}>
-          <div className="flex items-start justify-between gap-3">
-            <div className="min-w-0">
-              <p className="truncate text-sm font-black text-navy-950">{request.productName}</p>
-              <p className="mt-1 text-xs font-bold text-slate-500">
-                {[request.storage, request.color].filter(Boolean).join(" / ") || request.productCategory}
-              </p>
-            </div>
-            <span className="shrink-0 rounded-full bg-teal-500/10 px-3 py-1 text-[11px] font-black text-teal-700">
-              {request.status}
-            </span>
+  return createPortal(
+    <div
+      className="fixed inset-0 z-[100] overflow-y-auto bg-navy-950/75 px-4 py-6"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="requests-title"
+      onClick={onClose}
+    >
+      <div
+        className="mx-auto my-0 w-full max-w-lg rounded-lg bg-white p-5 shadow-soft sm:my-8 sm:p-6"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <p className="text-xs font-black uppercase text-teal-600">Sourcing</p>
+            <h2 id="requests-title" className="mt-1 text-2xl font-black text-navy-950">
+              My Requests
+            </h2>
+            <p className="mt-2 text-sm font-bold leading-6 text-slate-500">
+              Products you asked Teekay to source.
+            </p>
           </div>
-          <div className="flex items-center justify-between gap-3 text-xs font-bold text-slate-500">
-            <span>{request.createdAtText}</span>
-            {request.priceEstimate ? <span>{formatKes(request.priceEstimate)}</span> : null}
-          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-slate-100 text-xl font-black leading-none text-navy-950 transition hover:bg-ember-500 hover:text-white"
+            aria-label="Close requests panel"
+          >
+            x
+          </button>
         </div>
-      ))}
-    </div>
+
+        <div className="mt-6 grid gap-3">
+          {status === "loading" ? (
+            <span className="rounded-md bg-slate-100 px-3 py-2 text-sm font-black text-slate-600">
+              Loading requests...
+            </span>
+          ) : null}
+
+          {status === "error" ? (
+            <span className="rounded-md bg-ember-500/10 px-3 py-2 text-sm font-black text-ember-600">
+              Could not load requests. Check Firestore rules.
+            </span>
+          ) : null}
+
+          {status === "ready" && requests.length === 0 ? (
+            <span className="rounded-md bg-slate-100 px-3 py-2 text-sm font-black text-slate-600">
+              No requests yet.
+            </span>
+          ) : null}
+
+          {requests.map((request) => (
+            <div className="grid gap-2 rounded-lg border border-slate-200 bg-[#f8fbff] p-3" key={request.id}>
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-black text-navy-950">{request.productName}</p>
+                  <p className="mt-1 text-xs font-bold text-slate-500">
+                    {[request.storage, request.color].filter(Boolean).join(" / ") || request.productCategory}
+                  </p>
+                </div>
+                <span className="shrink-0 rounded-full bg-teal-500/10 px-3 py-1 text-[11px] font-black text-teal-700">
+                  {request.status}
+                </span>
+              </div>
+              <div className="flex items-center justify-between gap-3 text-xs font-bold text-slate-500">
+                <span>{request.createdAtText}</span>
+                {request.priceEstimate ? <span>{formatKes(request.priceEstimate)}</span> : null}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>,
+    document.body
   );
 }
 
@@ -834,7 +1147,6 @@ export function PurchaseLink({
   inquiry?: InquiryInput;
 }) {
   const { user, openAuth } = useAuthContext();
-  const [isSaving, setIsSaving] = useState(false);
 
   if (user?.phone) {
     if (!inquiry) {
@@ -848,10 +1160,7 @@ export function PurchaseLink({
     return (
       <button
         type="button"
-        disabled={isSaving}
         onClick={async () => {
-          setIsSaving(true);
-
           try {
             await saveInquiry(inquiry, {
               userId: user.uid,
@@ -867,7 +1176,7 @@ export function PurchaseLink({
         }}
         className={className}
       >
-        {isSaving ? "Saving..." : children}
+        {children}
       </button>
     );
   }

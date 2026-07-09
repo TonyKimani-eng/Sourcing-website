@@ -97,7 +97,7 @@ export default function ProductsPage() {
           </div>
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5">
             {products.iphoneProducts.map((product) => (
-              <IphoneProductCard product={product} whatsappUrl={brand.whatsappUrl} key={product.name} />
+              <IphoneProductCard product={product} key={product.name} />
             ))}
           </div>
         </Container>

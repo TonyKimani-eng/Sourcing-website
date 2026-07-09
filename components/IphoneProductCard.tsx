@@ -140,6 +140,21 @@ export function IphoneProductCard({ product, whatsappUrl }: IphoneProductCardPro
         <div className="mt-auto pt-5">
           <PurchaseLink
             href={`${whatsappUrl}?text=${encodeURIComponent(message)}`}
+            inquiry={
+              selectedOption
+                ? {
+                    productName: product.name,
+                    productCategory: "iPhones",
+                    storage: formatStorage(selectedOption.storage),
+                    color: selectedColor,
+                    priceEstimate: selectedOption.price
+                  }
+                : {
+                    productName: product.name,
+                    productCategory: "iPhones",
+                    color: selectedColor
+                  }
+            }
             className="inline-flex min-h-10 w-full items-center justify-center rounded-full bg-navy-950 px-4 text-sm font-black text-white transition hover:bg-ember-500"
           >
             Ask supplier

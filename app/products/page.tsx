@@ -132,6 +132,10 @@ export default function ProductsPage() {
                 </div>
                 <PurchaseLink
                   href={`${brand.whatsappUrl}?text=Hello%20Teekay%2C%20I%20want%20to%20source%20${encodeURIComponent(product.title)}.`}
+                  inquiry={{
+                    productName: product.title,
+                    productCategory: product.title
+                  }}
                   className="mt-6 inline-flex min-h-11 items-center rounded-full bg-ember-500 px-5 text-sm font-black text-white transition hover:bg-navy-950"
                 >
                   Ask about {product.title}

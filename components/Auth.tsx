@@ -22,11 +22,18 @@ import {
   verifyBeforeUpdateEmail
 } from "firebase/auth";
 import { auth, isFirebaseConfigured } from "@/lib/firebase";
+import {
+  InquiryInput,
+  SavedInquiry,
+  saveInquiry,
+  subscribeToUserInquiries
+} from "@/lib/inquiries";
 
 type AuthMode = "signin" | "signup";
 type AuthStep = "phone" | "code" | "profile";
 
 type User = {
+  uid: string;
   name: string;
   email: string;
   emailVerified: boolean;
@@ -105,6 +112,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(
         firebaseUser
           ? {
+              uid: firebaseUser.uid,
               name:
                 firebaseUser.displayName ??
                 firebaseUser.phoneNumber ??
@@ -241,6 +249,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       await updateProfile(currentUser, { displayName: nextName });
       setUser({
+        uid: currentUser.uid,
         name: nextName,
         email: currentUser.email ?? "",
         emailVerified: currentUser.emailVerified,
@@ -258,6 +267,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     try {
       setUser({
+        uid: currentUser.uid,
         name: nextName,
         email: currentUser.email || "",
         emailVerified: currentUser.emailVerified,
@@ -550,6 +560,7 @@ function AccountPanel({
             tone={user.phone ? "success" : "warning"}
           />
           <EmailAccountAction user={user} />
+          <MyRequests userId={user.uid} />
         </div>
 
         <div className="mt-6 flex flex-col gap-3 border-t border-slate-200 pt-5 sm:flex-row sm:justify-end">
@@ -571,6 +582,77 @@ function AccountPanel({
       </div>
     </div>,
     document.body
+  );
+}
+
+function formatKes(value: number) {
+  return `KSh ${Math.round(value).toLocaleString("en-KE")}`;
+}
+
+function MyRequests({ userId }: { userId: string }) {
+  const [requests, setRequests] = useState<SavedInquiry[]>([]);
+  const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
+
+  useEffect(() => {
+    setStatus("loading");
+
+    return subscribeToUserInquiries(
+      userId,
+      (nextRequests) => {
+        setRequests(nextRequests);
+        setStatus("ready");
+      },
+      () => setStatus("error")
+    );
+  }, [userId]);
+
+  return (
+    <div className="grid gap-3 rounded-lg border border-slate-200 p-3">
+      <div>
+        <span className="text-xs font-black uppercase text-slate-500">My requests</span>
+        <p className="mt-1 text-sm font-bold leading-6 text-slate-500">
+          Products you asked Teekay to source.
+        </p>
+      </div>
+
+      {status === "loading" ? (
+        <span className="rounded-md bg-slate-100 px-3 py-2 text-sm font-black text-slate-600">
+          Loading requests...
+        </span>
+      ) : null}
+
+      {status === "error" ? (
+        <span className="rounded-md bg-ember-500/10 px-3 py-2 text-sm font-black text-ember-600">
+          Could not load requests. Check Firestore rules.
+        </span>
+      ) : null}
+
+      {status === "ready" && requests.length === 0 ? (
+        <span className="rounded-md bg-slate-100 px-3 py-2 text-sm font-black text-slate-600">
+          No requests yet.
+        </span>
+      ) : null}
+
+      {requests.slice(0, 4).map((request) => (
+        <div className="grid gap-2 rounded-lg bg-[#f8fbff] p-3" key={request.id}>
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0">
+              <p className="truncate text-sm font-black text-navy-950">{request.productName}</p>
+              <p className="mt-1 text-xs font-bold text-slate-500">
+                {[request.storage, request.color].filter(Boolean).join(" / ") || request.productCategory}
+              </p>
+            </div>
+            <span className="shrink-0 rounded-full bg-teal-500/10 px-3 py-1 text-[11px] font-black text-teal-700">
+              {request.status}
+            </span>
+          </div>
+          <div className="flex items-center justify-between gap-3 text-xs font-bold text-slate-500">
+            <span>{request.createdAtText}</span>
+            {request.priceEstimate ? <span>{formatKes(request.priceEstimate)}</span> : null}
+          </div>
+        </div>
+      ))}
+    </div>
   );
 }
 
@@ -743,19 +825,50 @@ function AccountDetail({
 export function PurchaseLink({
   href,
   children,
-  className
+  className,
+  inquiry
 }: {
   href: string;
   children: ReactNode;
   className: string;
+  inquiry?: InquiryInput;
 }) {
   const { user, openAuth } = useAuthContext();
+  const [isSaving, setIsSaving] = useState(false);
 
   if (user?.phone) {
+    if (!inquiry) {
+      return (
+        <a href={href} className={className}>
+          {children}
+        </a>
+      );
+    }
+
     return (
-      <a href={href} className={className}>
-        {children}
-      </a>
+      <button
+        type="button"
+        disabled={isSaving}
+        onClick={async () => {
+          setIsSaving(true);
+
+          try {
+            await saveInquiry(inquiry, {
+              userId: user.uid,
+              customerName: user.name,
+              customerPhone: user.phone,
+              customerEmail: user.email
+            });
+          } catch (error) {
+            console.error("Could not save inquiry", error);
+          } finally {
+            window.location.href = href;
+          }
+        }}
+        className={className}
+      >
+        {isSaving ? "Saving..." : children}
+      </button>
     );
   }
 

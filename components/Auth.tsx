@@ -24,9 +24,7 @@ import {
 import { auth, isFirebaseConfigured } from "@/lib/firebase";
 import {
   InquiryInput,
-  SavedInquiry,
   saveInquiry,
-  subscribeToUserInquiries
 } from "@/lib/inquiries";
 import { siteContent } from "@/data/site";
 
@@ -113,6 +111,10 @@ function useAuthContext() {
   }
 
   return context;
+}
+
+export function useAuth() {
+  return useAuthContext();
 }
 
 export function useCart() {
@@ -527,13 +529,11 @@ export function AuthButtons({ compact = false }: { compact?: boolean }) {
   const { user, openAuth, signOut } = useAuthContext();
   const { itemCount } = useCart();
   const [isAccountOpen, setIsAccountOpen] = useState(false);
-  const [isRequestsOpen, setIsRequestsOpen] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
 
   useEffect(() => {
     if (!user) {
       setIsAccountOpen(false);
-      setIsRequestsOpen(false);
     }
   }, [user]);
 
@@ -548,15 +548,6 @@ export function AuthButtons({ compact = false }: { compact?: boolean }) {
           aria-expanded={isCartOpen}
         >
           Cart{itemCount ? ` (${itemCount})` : ""}
-        </button>
-        <button
-          type="button"
-          onClick={() => setIsRequestsOpen(true)}
-          className="inline-flex min-h-10 min-w-0 shrink-0 items-center rounded-full border border-white/20 px-3 text-xs font-black text-white transition hover:border-gold-400 hover:text-gold-400 sm:px-4"
-          aria-haspopup="dialog"
-          aria-expanded={isRequestsOpen}
-        >
-          Requests
         </button>
         <button
           type="button"
@@ -579,9 +570,6 @@ export function AuthButtons({ compact = false }: { compact?: boolean }) {
               await signOut();
             }}
           />
-        ) : null}
-        {isRequestsOpen ? (
-          <RequestsPanel userId={user.uid} onClose={() => setIsRequestsOpen(false)} />
         ) : null}
         {isCartOpen ? <CartPanel onClose={() => setIsCartOpen(false)} /> : null}
       </div>
@@ -869,104 +857,6 @@ function AccountPanel({
 
 function formatKes(value: number) {
   return `KSh ${Math.round(value).toLocaleString("en-KE")}`;
-}
-
-function RequestsPanel({ userId, onClose }: { userId: string; onClose: () => void }) {
-  const [requests, setRequests] = useState<SavedInquiry[]>([]);
-  const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
-
-  useEffect(() => {
-    setStatus("loading");
-
-    return subscribeToUserInquiries(
-      userId,
-      (nextRequests) => {
-        setRequests(nextRequests);
-        setStatus("ready");
-      },
-      () => setStatus("error")
-    );
-  }, [userId]);
-
-  if (typeof document === "undefined") {
-    return null;
-  }
-
-  return createPortal(
-    <div
-      className="fixed inset-0 z-[100] overflow-y-auto bg-navy-950/75 px-4 py-6"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="requests-title"
-      onClick={onClose}
-    >
-      <div
-        className="mx-auto my-0 w-full max-w-lg rounded-lg bg-white p-5 shadow-soft sm:my-8 sm:p-6"
-        onClick={(event) => event.stopPropagation()}
-      >
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <p className="text-xs font-black uppercase text-teal-600">Sourcing</p>
-            <h2 id="requests-title" className="mt-1 text-2xl font-black text-navy-950">
-              My Requests
-            </h2>
-            <p className="mt-2 text-sm font-bold leading-6 text-slate-500">
-              Products you asked Teekay to source.
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-slate-100 text-xl font-black leading-none text-navy-950 transition hover:bg-ember-500 hover:text-white"
-            aria-label="Close requests panel"
-          >
-            x
-          </button>
-        </div>
-
-        <div className="mt-6 grid gap-3">
-          {status === "loading" ? (
-            <span className="rounded-md bg-slate-100 px-3 py-2 text-sm font-black text-slate-600">
-              Loading requests...
-            </span>
-          ) : null}
-
-          {status === "error" ? (
-            <span className="rounded-md bg-ember-500/10 px-3 py-2 text-sm font-black text-ember-600">
-              Could not load requests. Check Firestore rules.
-            </span>
-          ) : null}
-
-          {status === "ready" && requests.length === 0 ? (
-            <span className="rounded-md bg-slate-100 px-3 py-2 text-sm font-black text-slate-600">
-              No requests yet.
-            </span>
-          ) : null}
-
-          {requests.map((request) => (
-            <div className="grid gap-2 rounded-lg border border-slate-200 bg-[#f8fbff] p-3" key={request.id}>
-              <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-black text-navy-950">{request.productName}</p>
-                  <p className="mt-1 text-xs font-bold text-slate-500">
-                    {[request.storage, request.color].filter(Boolean).join(" / ") || request.productCategory}
-                  </p>
-                </div>
-                <span className="shrink-0 rounded-full bg-teal-500/10 px-3 py-1 text-[11px] font-black text-teal-700">
-                  {request.status}
-                </span>
-              </div>
-              <div className="flex items-center justify-between gap-3 text-xs font-bold text-slate-500">
-                <span>{request.createdAtText}</span>
-                {request.priceEstimate ? <span>{formatKes(request.priceEstimate)}</span> : null}
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>,
-    document.body
-  );
 }
 
 function EmailAccountAction({ user }: { user: User }) {

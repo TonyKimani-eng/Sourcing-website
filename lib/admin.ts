@@ -16,6 +16,10 @@ export type AdminInquiry = SavedInquiry & {
   customerPhone: string;
   customerEmail: string;
   createdAtMs: number;
+  paymentMethod?: string;
+  paymentStatus?: string;
+  paymentNote?: string;
+  paymentCode?: string;
 };
 
 function formatDate(value: unknown) {
@@ -93,6 +97,10 @@ export function subscribeToAdminInquiries(
             priceEstimate:
               typeof data.priceEstimate === "number" ? data.priceEstimate : undefined,
             quantity: typeof data.quantity === "number" ? data.quantity : undefined,
+            paymentMethod: data.paymentMethod ? String(data.paymentMethod) : undefined,
+            paymentStatus: data.paymentStatus ? String(data.paymentStatus) : undefined,
+            paymentNote: data.paymentNote ? String(data.paymentNote) : undefined,
+            paymentCode: data.paymentCode ? String(data.paymentCode) : undefined,
             orderItems,
             status: (data.status ?? "New") as InquiryStatus,
             createdAtText: formatDate(data.createdAt),
@@ -110,6 +118,15 @@ export function subscribeToAdminInquiries(
 export async function updateInquiryStatus(inquiryId: string, status: InquiryStatus) {
   if (!db) {
     throw new Error("Firestore is not configured.");
+  }
+
+  if (status === "Paid") {
+    await updateDoc(doc(db, "inquiries", inquiryId), {
+      status,
+      paymentStatus: "Order received",
+      updatedAt: serverTimestamp()
+    });
+    return;
   }
 
   await updateDoc(doc(db, "inquiries", inquiryId), {

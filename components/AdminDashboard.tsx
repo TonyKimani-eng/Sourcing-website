@@ -43,6 +43,8 @@ function InquiryCard({ inquiry }: { inquiry: AdminInquiry }) {
   };
 
   const isCartOrder = inquiry.orderItems && inquiry.orderItems.length > 0;
+  const hasPaymentAlert =
+    inquiry.paymentStatus?.toLowerCase().includes("payment submitted") && inquiry.status !== "Paid";
 
   return (
     <article className="grid gap-4 rounded-lg border border-slate-200 bg-white p-4 shadow-soft">
@@ -92,6 +94,60 @@ function InquiryCard({ inquiry }: { inquiry: AdminInquiry }) {
         </div>
       </div>
 
+      {inquiry.paymentMethod || inquiry.paymentStatus ? (
+        <div
+          className={`grid gap-3 rounded-lg border p-3 sm:grid-cols-2 ${
+            hasPaymentAlert
+              ? "border-ember-500/30 bg-ember-500/10"
+              : "border-teal-500/20 bg-teal-500/10"
+          }`}
+        >
+          {hasPaymentAlert ? (
+            <div className="sm:col-span-2">
+              <p className="text-xs font-black uppercase text-ember-600">Payment alert</p>
+              <p className="mt-1 text-sm font-black text-navy-950">
+                Customer says they have paid. Confirm in M-Pesa, then mark this order as paid.
+              </p>
+            </div>
+          ) : null}
+          <div>
+            <p className="text-xs font-black uppercase text-slate-500">Payment method</p>
+            <p className="mt-1 text-sm font-black text-navy-950">
+              {inquiry.paymentMethod || "Manual confirmation"}
+            </p>
+          </div>
+          <div>
+            <p className="text-xs font-black uppercase text-slate-500">Payment status</p>
+            <p className="mt-1 text-sm font-black text-navy-950">
+              {inquiry.paymentStatus || "Awaiting payment details"}
+            </p>
+          </div>
+          {inquiry.paymentCode ? (
+            <div>
+              <p className="text-xs font-black uppercase text-slate-500">Payment code</p>
+              <p className="mt-1 rounded-md bg-white px-3 py-2 text-sm font-black uppercase text-navy-950">
+                {inquiry.paymentCode}
+              </p>
+            </div>
+          ) : null}
+          {hasPaymentAlert ? (
+            <button
+              type="button"
+              onClick={() => void saveStatus("Paid")}
+              disabled={saveState === "saving"}
+              className="inline-flex min-h-10 items-center justify-center self-end rounded-full bg-ember-500 px-4 text-xs font-black text-white transition hover:bg-navy-950 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              Confirm paid
+            </button>
+          ) : null}
+          {inquiry.paymentNote ? (
+            <p className="text-sm font-bold leading-6 text-slate-600 sm:col-span-2">
+              {inquiry.paymentNote}
+            </p>
+          ) : null}
+        </div>
+      ) : null}
+
       {isCartOrder ? (
         <div className="grid gap-2">
           {inquiry.orderItems?.map((item, index) => (
@@ -138,7 +194,12 @@ export function AdminDashboard() {
     () => ({
       total: inquiries.length,
       newCount: inquiries.filter((inquiry) => inquiry.status === "New").length,
-      iPhoneOrders: inquiries.filter((inquiry) => inquiry.orderItems?.length).length
+      iPhoneOrders: inquiries.filter((inquiry) => inquiry.orderItems?.length).length,
+      paymentAlerts: inquiries.filter(
+        (inquiry) =>
+          inquiry.paymentStatus?.toLowerCase().includes("payment submitted") &&
+          inquiry.status !== "Paid"
+      ).length
     }),
     [inquiries]
   );
@@ -246,8 +307,8 @@ export function AdminDashboard() {
             <p className="mt-2 text-3xl font-black text-ember-500">{summary.newCount}</p>
           </div>
           <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-soft">
-            <p className="text-xs font-black uppercase text-slate-500">iPhone orders</p>
-            <p className="mt-2 text-3xl font-black text-teal-600">{summary.iPhoneOrders}</p>
+            <p className="text-xs font-black uppercase text-slate-500">Payment alerts</p>
+            <p className="mt-2 text-3xl font-black text-teal-600">{summary.paymentAlerts}</p>
           </div>
         </div>
 

@@ -17,6 +17,10 @@ export type InquiryInput = {
   color?: string;
   priceEstimate?: number;
   quantity?: number;
+  paymentMethod?: string;
+  paymentStatus?: string;
+  paymentNote?: string;
+  paymentCode?: string;
   orderItems?: Array<{
     productName: string;
     storage: string;
@@ -111,6 +115,11 @@ export function subscribeToUserInquiries(
             color: data.color ? String(data.color) : undefined,
             priceEstimate:
               typeof data.priceEstimate === "number" ? data.priceEstimate : undefined,
+            quantity: typeof data.quantity === "number" ? data.quantity : undefined,
+            paymentMethod: data.paymentMethod ? String(data.paymentMethod) : undefined,
+            paymentStatus: data.paymentStatus ? String(data.paymentStatus) : undefined,
+            paymentNote: data.paymentNote ? String(data.paymentNote) : undefined,
+            paymentCode: data.paymentCode ? String(data.paymentCode) : undefined,
             status: (data.status ?? "New") as InquiryStatus,
             createdAtText: formatDate(data.createdAt),
             createdAtMs: getTime(data.createdAt)

@@ -24,7 +24,9 @@ import {
 import { auth, isFirebaseConfigured } from "@/lib/firebase";
 import {
   InquiryInput,
+  SavedInquiry,
   saveInquiry,
+  subscribeToUserInquiries,
 } from "@/lib/inquiries";
 import { siteContent } from "@/data/site";
 import { isAdminPhone } from "@/lib/admin";
@@ -32,6 +34,10 @@ import { routePath } from "@/data/paths";
 
 type AuthMode = "signin" | "signup";
 type AuthStep = "phone" | "code" | "profile";
+type CheckoutStep = "cart" | "payment" | "submitted";
+
+const manualPaymentName = "Tony Kimani";
+const manualPaymentPhone = siteContent.brand.phone;
 
 type User = {
   uid: string;
@@ -619,6 +625,8 @@ export function AuthButtons({ compact = false }: { compact?: boolean }) {
 function CartPanel({ onClose }: { onClose: () => void }) {
   const { user, openAuth } = useAuthContext();
   const { items, total, updateQuantity, removeItem, clearCart } = useCart();
+  const [checkoutStep, setCheckoutStep] = useState<CheckoutStep>("cart");
+  const [paymentCode, setPaymentCode] = useState("");
   const [isCheckingOut, setIsCheckingOut] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
@@ -626,17 +634,34 @@ function CartPanel({ onClose }: { onClose: () => void }) {
     return null;
   }
 
-  const checkoutMessage = `Hello Teekay, I want to order these iPhones:\n\n${items
-    .map(
-      (item, index) =>
-        `${index + 1}. ${item.productName}\nStorage: ${item.storage}\nColor: ${item.color}\nQuantity: ${
-          item.quantity
-        }\nUnit price: ${formatKes(item.unitPrice)}\nSubtotal: ${formatKes(item.unitPrice * item.quantity)}`
-    )
-    .join("\n\n")}\n\nTotal: ${formatKes(total)}\n\nPlease confirm availability and final invoice.`;
+  const paymentNote =
+    "Customer submitted a manual M-Pesa payment code. Confirm the payment, then set the status to Paid.";
 
-  const checkout = async () => {
+  const beginCheckout = () => {
     if (!items.length) {
+      return;
+    }
+
+    if (!user?.phone) {
+      onClose();
+      openAuth("signin");
+      return;
+    }
+
+    setErrorMessage("");
+    setCheckoutStep("payment");
+  };
+
+  const submitPayment = async () => {
+    const nextPaymentCode = paymentCode.trim();
+
+    if (!items.length) {
+      setCheckoutStep("cart");
+      return;
+    }
+
+    if (!nextPaymentCode) {
+      setErrorMessage("Paste the M-Pesa payment code before clicking I paid.");
       return;
     }
 
@@ -656,6 +681,10 @@ function CartPanel({ onClose }: { onClose: () => void }) {
           productCategory: "iPhones",
           priceEstimate: total,
           quantity: items.reduce((sum, item) => sum + item.quantity, 0),
+          paymentMethod: "Manual M-Pesa",
+          paymentStatus: "Payment submitted - awaiting admin confirmation",
+          paymentNote,
+          paymentCode: nextPaymentCode,
           orderItems: items.map((item) => ({
             productName: item.productName,
             storage: item.storage,
@@ -672,12 +701,13 @@ function CartPanel({ onClose }: { onClose: () => void }) {
           customerEmail: user.email
         }
       );
+      clearCart();
+      setCheckoutStep("submitted");
     } catch (error) {
       console.error("Could not save cart inquiry", error);
-      setErrorMessage("WhatsApp will still open. Request history may not update.");
+      setErrorMessage("Could not submit payment details. Please try again.");
     } finally {
-      clearCart();
-      window.location.href = `${siteContent.brand.whatsappUrl}?text=${encodeURIComponent(checkoutMessage)}`;
+      setIsCheckingOut(false);
     }
   };
 
@@ -697,7 +727,7 @@ function CartPanel({ onClose }: { onClose: () => void }) {
           <div>
             <p className="text-xs font-black uppercase text-teal-600">iPhone order</p>
             <h2 id="cart-title" className="mt-1 text-2xl font-black text-navy-950">
-              Cart
+              {checkoutStep === "submitted" ? "Waiting confirmation" : checkoutStep === "payment" ? "Manual payment" : "Cart"}
             </h2>
           </div>
           <button
@@ -710,6 +740,25 @@ function CartPanel({ onClose }: { onClose: () => void }) {
           </button>
         </div>
 
+        {checkoutStep === "submitted" ? (
+          <div className="mt-6 grid gap-4">
+            <div className="rounded-lg border border-teal-500/30 bg-teal-500/10 p-4">
+              <p className="text-lg font-black text-teal-700">Waiting confirmation</p>
+              <p className="mt-2 text-sm font-bold leading-6 text-teal-800">
+                Your order and payment code were sent to Teekay admin. Once payment is confirmed, your account will show Order received.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={onClose}
+              className="inline-flex min-h-11 w-full items-center justify-center rounded-full bg-navy-950 px-5 text-sm font-black text-white transition hover:bg-ember-500"
+            >
+              Close
+            </button>
+          </div>
+        ) : null}
+
+        {checkoutStep !== "submitted" ? (
         <div className="mt-6 grid gap-3">
           {items.length ? (
             items.map((item) => (
@@ -764,6 +813,7 @@ function CartPanel({ onClose }: { onClose: () => void }) {
             </span>
           )}
         </div>
+        ) : null}
 
         {errorMessage ? (
           <p className="mt-4 rounded-md bg-ember-500/10 px-3 py-2 text-sm font-black text-ember-600">
@@ -771,20 +821,66 @@ function CartPanel({ onClose }: { onClose: () => void }) {
           </p>
         ) : null}
 
+        {checkoutStep === "payment" && items.length ? (
+          <div className="mt-5 grid gap-4 rounded-lg border border-slate-200 bg-[#f8fbff] p-4">
+            <div>
+              <p className="text-xs font-black uppercase text-slate-500">Send M-Pesa to</p>
+              <div className="mt-2 grid gap-2 sm:grid-cols-2">
+                <div className="rounded-md bg-white px-3 py-2">
+                  <p className="text-xs font-bold text-slate-500">Name</p>
+                  <p className="text-sm font-black text-navy-950">{manualPaymentName}</p>
+                </div>
+                <div className="rounded-md bg-white px-3 py-2">
+                  <p className="text-xs font-bold text-slate-500">Mobile number</p>
+                  <p className="text-sm font-black text-navy-950">{manualPaymentPhone}</p>
+                </div>
+              </div>
+            </div>
+            <label className="grid gap-2">
+              <span className="text-sm font-black text-navy-950">M-Pesa payment code</span>
+              <input
+                value={paymentCode}
+                onChange={(event) => {
+                  setPaymentCode(event.target.value.toUpperCase());
+                  setErrorMessage("");
+                }}
+                className="min-h-11 rounded-lg border border-slate-200 px-3 text-sm font-bold uppercase text-navy-950 outline-none transition focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10"
+                placeholder="Paste payment code"
+              />
+            </label>
+          </div>
+        ) : null}
+
+        {checkoutStep !== "submitted" ? (
         <div className="mt-6 border-t border-slate-200 pt-5">
           <div className="flex items-center justify-between gap-4">
             <span className="text-sm font-black uppercase text-slate-500">Total</span>
             <span className="text-2xl font-black text-ember-500">{formatKes(total)}</span>
           </div>
+          {checkoutStep === "payment" ? (
+            <button
+              type="button"
+              onClick={() => void submitPayment()}
+              disabled={!items.length || isCheckingOut}
+              className="mt-4 inline-flex min-h-11 w-full items-center justify-center rounded-full bg-ember-500 px-5 text-sm font-black text-white transition hover:bg-navy-950 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {isCheckingOut ? "Submitting..." : "I paid"}
+            </button>
+          ) : (
           <button
             type="button"
-            onClick={() => void checkout()}
+            onClick={beginCheckout}
             disabled={!items.length || isCheckingOut}
             className="mt-4 inline-flex min-h-11 w-full items-center justify-center rounded-full bg-ember-500 px-5 text-sm font-black text-white transition hover:bg-navy-950 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {isCheckingOut ? "Opening WhatsApp..." : user?.phone ? "Checkout on WhatsApp" : "Sign in to checkout"}
+            {isCheckingOut ? "Placing order..." : user?.phone ? "Place order - manual M-Pesa" : "Sign in to checkout"}
           </button>
+          )}
+          <p className="mt-3 rounded-md bg-teal-500/10 px-3 py-2 text-xs font-bold leading-5 text-teal-700">
+            Payment is checked manually. Your account updates after admin confirms the payment.
+          </p>
         </div>
+        ) : null}
       </div>
     </div>,
     document.body
@@ -841,6 +937,7 @@ function AccountPanel({
             tone={user.phone ? "success" : "warning"}
           />
           <EmailAccountAction user={user} />
+          <CustomerOrders userId={user.uid} />
         </div>
 
         <div className="mt-6 flex flex-col gap-3 border-t border-slate-200 pt-5 sm:flex-row sm:justify-end">
@@ -867,6 +964,79 @@ function AccountPanel({
 
 function formatKes(value: number) {
   return `KSh ${Math.round(value).toLocaleString("en-KE")}`;
+}
+
+function getCustomerOrderStatus(inquiry: SavedInquiry) {
+  if (inquiry.status === "Paid") {
+    return "Order received";
+  }
+
+  if (inquiry.paymentStatus?.toLowerCase().includes("payment submitted")) {
+    return "Waiting confirmation";
+  }
+
+  return inquiry.status;
+}
+
+function CustomerOrders({ userId }: { userId: string }) {
+  const [orders, setOrders] = useState<SavedInquiry[]>([]);
+  const [loadState, setLoadState] = useState<"loading" | "ready" | "error">("loading");
+
+  useEffect(() => {
+    setLoadState("loading");
+
+    return subscribeToUserInquiries(
+      userId,
+      (nextOrders) => {
+        setOrders(nextOrders);
+        setLoadState("ready");
+      },
+      () => setLoadState("error")
+    );
+  }, [userId]);
+
+  return (
+    <div className="grid gap-3 rounded-lg border border-slate-200 p-3">
+      <span className="text-xs font-black uppercase text-slate-500">Orders</span>
+      {loadState === "loading" ? (
+        <span className="rounded-md bg-slate-100 px-3 py-2 text-sm font-black text-slate-600">
+          Loading orders...
+        </span>
+      ) : null}
+      {loadState === "error" ? (
+        <span className="rounded-md bg-ember-500/10 px-3 py-2 text-sm font-black text-ember-600">
+          Could not load orders.
+        </span>
+      ) : null}
+      {loadState === "ready" && !orders.length ? (
+        <span className="rounded-md bg-slate-100 px-3 py-2 text-sm font-black text-slate-600">
+          No orders yet.
+        </span>
+      ) : null}
+      {orders.slice(0, 5).map((order) => (
+        <div className="grid gap-2 rounded-md bg-[#f8fbff] p-3" key={order.id}>
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0">
+              <p className="truncate text-sm font-black text-navy-950">{order.productName}</p>
+              <p className="mt-1 text-xs font-bold text-slate-500">{order.createdAtText}</p>
+            </div>
+            <span
+              className={`shrink-0 rounded-full px-3 py-1 text-xs font-black ${
+                order.status === "Paid"
+                  ? "bg-teal-500/10 text-teal-700"
+                  : "bg-gold-400/20 text-navy-950"
+              }`}
+            >
+              {getCustomerOrderStatus(order)}
+            </span>
+          </div>
+          {order.priceEstimate ? (
+            <p className="text-sm font-black text-ember-500">{formatKes(order.priceEstimate)}</p>
+          ) : null}
+        </div>
+      ))}
+    </div>
+  );
 }
 
 function EmailAccountAction({ user }: { user: User }) {

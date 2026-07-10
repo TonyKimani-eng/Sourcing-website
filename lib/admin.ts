@@ -90,8 +90,14 @@ export function subscribeToAdminInquiries(
             customerName: String(data.customerName ?? "Customer"),
             customerPhone: String(data.customerPhone ?? ""),
             customerEmail: String(data.customerEmail ?? ""),
+            requestType: (data.requestType === "sourcing" ? "sourcing" : "product") as "sourcing" | "product",
             productName: String(data.productName ?? ""),
             productCategory: String(data.productCategory ?? ""),
+            description: data.description ? String(data.description) : undefined,
+            contactMethod: data.contactMethod ? String(data.contactMethod) : undefined,
+            photoUrls: Array.isArray(data.photoUrls)
+              ? data.photoUrls.map((url) => String(url))
+              : undefined,
             storage: data.storage ? String(data.storage) : undefined,
             color: data.color ? String(data.color) : undefined,
             priceEstimate:

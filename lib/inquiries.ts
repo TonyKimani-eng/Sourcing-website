@@ -6,13 +6,19 @@ import {
   serverTimestamp,
   where
 } from "firebase/firestore";
+import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import { db } from "@/lib/firebase";
+import { storage } from "@/lib/firebase";
 
-export type InquiryStatus = "New" | "Contacted" | "Quoted" | "Paid" | "Shipped" | "Completed";
+export type InquiryStatus = "New" | "Reviewed" | "Contacted" | "Quoted" | "Paid" | "Shipped" | "Completed";
 
 export type InquiryInput = {
+  requestType?: "product" | "sourcing";
   productName: string;
   productCategory: string;
+  description?: string;
+  contactMethod?: string;
+  photoUrls?: string[];
   storage?: string;
   color?: string;
   priceEstimate?: number;
@@ -80,12 +86,40 @@ export async function saveInquiry(inquiry: InquiryInput, customer: CustomerInput
   }
 
   await addDoc(collection(db, "inquiries"), {
+    requestType: "product",
     ...inquiry,
     ...customer,
     status: "New" satisfies InquiryStatus,
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp()
   });
+}
+
+function safeFileName(fileName: string) {
+  return fileName.replace(/[^a-zA-Z0-9._-]/g, "-").slice(0, 80);
+}
+
+export async function uploadInquiryPhotos(userId: string, files: File[]) {
+  if (!storage) {
+    throw new Error("Firebase Storage is not configured.");
+  }
+
+  const uploadTime = Date.now();
+
+  return Promise.all(
+    files.map(async (file, index) => {
+      const imageRef = ref(
+        storage,
+        `sourcing-orders/${userId}/${uploadTime}-${index}-${safeFileName(file.name)}`
+      );
+
+      await uploadBytes(imageRef, file, {
+        contentType: file.type
+      });
+
+      return getDownloadURL(imageRef);
+    })
+  );
 }
 
 export function subscribeToUserInquiries(
@@ -111,6 +145,12 @@ export function subscribeToUserInquiries(
             id: doc.id,
             productName: String(data.productName ?? ""),
             productCategory: String(data.productCategory ?? ""),
+            requestType: (data.requestType === "sourcing" ? "sourcing" : "product") as "sourcing" | "product",
+            description: data.description ? String(data.description) : undefined,
+            contactMethod: data.contactMethod ? String(data.contactMethod) : undefined,
+            photoUrls: Array.isArray(data.photoUrls)
+              ? data.photoUrls.map((url) => String(url))
+              : undefined,
             storage: data.storage ? String(data.storage) : undefined,
             color: data.color ? String(data.color) : undefined,
             priceEstimate:

@@ -14,7 +14,7 @@ import {
 import { InquiryStatus } from "@/lib/inquiries";
 import { routePath } from "@/data/paths";
 
-const statuses: InquiryStatus[] = ["New", "Contacted", "Quoted", "Paid", "Shipped", "Completed"];
+const statuses: InquiryStatus[] = ["New", "Reviewed", "Contacted", "Quoted", "Paid", "Shipped", "Completed"];
 
 function formatKes(value: number) {
   return `KSh ${Math.round(value).toLocaleString("en-KE")}`;
@@ -43,6 +43,7 @@ function InquiryCard({ inquiry }: { inquiry: AdminInquiry }) {
   };
 
   const isCartOrder = inquiry.orderItems && inquiry.orderItems.length > 0;
+  const isSourcingOrder = inquiry.requestType === "sourcing";
   const hasPaymentAlert =
     inquiry.paymentStatus?.toLowerCase().includes("payment submitted") && inquiry.status !== "Paid";
 
@@ -51,7 +52,7 @@ function InquiryCard({ inquiry }: { inquiry: AdminInquiry }) {
       <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
         <div className="min-w-0">
           <p className="text-xs font-black uppercase text-teal-600">
-            {isCartOrder ? "iPhone cart order" : inquiry.productCategory}
+            {isSourcingOrder ? "Sourcing order" : isCartOrder ? "iPhone cart order" : inquiry.productCategory}
           </p>
           <h2 className="mt-1 text-xl font-black text-navy-950">{inquiry.productName}</h2>
           <p className="mt-2 text-sm font-bold leading-6 text-slate-500">{inquiry.createdAtText}</p>
@@ -148,7 +149,51 @@ function InquiryCard({ inquiry }: { inquiry: AdminInquiry }) {
         </div>
       ) : null}
 
-      {isCartOrder ? (
+      {isSourcingOrder ? (
+        <div className="grid gap-3 rounded-lg border border-slate-200 bg-[#fbfdff] p-3">
+          <div>
+            <p className="text-xs font-black uppercase text-slate-500">Item description</p>
+            <p className="mt-1 whitespace-pre-wrap text-sm font-bold leading-6 text-navy-950">
+              {inquiry.description || "No description added."}
+            </p>
+          </div>
+          <div>
+            <p className="text-xs font-black uppercase text-slate-500">Follow-up contact</p>
+            <p className="mt-1 text-sm font-black text-navy-950">
+              {inquiry.contactMethod || inquiry.customerEmail || inquiry.customerPhone || "Not added"}
+            </p>
+          </div>
+          {inquiry.photoUrls?.length ? (
+            <div className="grid gap-2">
+              <p className="text-xs font-black uppercase text-slate-500">Reference photos</p>
+              <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+                {inquiry.photoUrls.map((url, index) => (
+                  <a
+                    href={url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="overflow-hidden rounded-lg border border-slate-200 bg-white"
+                    key={url}
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={url} alt={`${inquiry.productName} reference ${index + 1}`} className="h-32 w-full object-cover" />
+                  </a>
+                ))}
+              </div>
+            </div>
+          ) : null}
+          {inquiry.status !== "Reviewed" ? (
+            <button
+              type="button"
+              onClick={() => void saveStatus("Reviewed")}
+              disabled={saveState === "saving"}
+              className="inline-flex min-h-10 w-full items-center justify-center rounded-full bg-teal-600 px-4 text-xs font-black text-white transition hover:bg-navy-950 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+            >
+              Mark reviewed
+            </button>
+          ) : null}
+        </div>
+      ) : isCartOrder ? (
         <div className="grid gap-2">
           {inquiry.orderItems?.map((item, index) => (
             <div className="rounded-lg border border-slate-200 bg-[#fbfdff] p-3" key={`${item.productName}-${index}`}>
@@ -176,9 +221,11 @@ function InquiryCard({ inquiry }: { inquiry: AdminInquiry }) {
       )}
 
       <div className="flex items-center justify-between border-t border-slate-200 pt-3">
-        <span className="text-xs font-black uppercase text-slate-500">Estimated total</span>
+        <span className="text-xs font-black uppercase text-slate-500">
+          {isSourcingOrder ? "Request status" : "Estimated total"}
+        </span>
         <span className="text-xl font-black text-ember-500">
-          {inquiry.priceEstimate ? formatKes(inquiry.priceEstimate) : "Confirm quote"}
+          {isSourcingOrder ? inquiry.status : inquiry.priceEstimate ? formatKes(inquiry.priceEstimate) : "Confirm quote"}
         </span>
       </div>
     </article>
@@ -195,6 +242,7 @@ export function AdminDashboard() {
       total: inquiries.length,
       newCount: inquiries.filter((inquiry) => inquiry.status === "New").length,
       iPhoneOrders: inquiries.filter((inquiry) => inquiry.orderItems?.length).length,
+      sourcingOrders: inquiries.filter((inquiry) => inquiry.requestType === "sourcing").length,
       paymentAlerts: inquiries.filter(
         (inquiry) =>
           inquiry.paymentStatus?.toLowerCase().includes("payment submitted") &&
@@ -307,8 +355,8 @@ export function AdminDashboard() {
             <p className="mt-2 text-3xl font-black text-ember-500">{summary.newCount}</p>
           </div>
           <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-soft">
-            <p className="text-xs font-black uppercase text-slate-500">Payment alerts</p>
-            <p className="mt-2 text-3xl font-black text-teal-600">{summary.paymentAlerts}</p>
+            <p className="text-xs font-black uppercase text-slate-500">Sourcing orders</p>
+            <p className="mt-2 text-3xl font-black text-teal-600">{summary.sourcingOrders}</p>
           </div>
         </div>
 

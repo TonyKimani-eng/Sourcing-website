@@ -4,6 +4,7 @@ import Link from "next/link";
 import { AuthButtons, PurchaseLink } from "@/components/Auth";
 import { Container } from "@/components/Container";
 import { IphoneProductCard } from "@/components/IphoneProductCard";
+import { SourcingOrderForm } from "@/components/SourcingOrderForm";
 import { assetPath } from "@/data/paths";
 import { siteContent } from "@/data/site";
 
@@ -44,6 +45,12 @@ export default function ProductsPage() {
                   {product.title}
                 </a>
               ))}
+              <a
+                href="#sourcing-order"
+                className="inline-flex min-h-10 items-center rounded-full border border-white/12 px-4 text-sm font-black text-white/82 transition hover:border-gold-400 hover:text-gold-400"
+              >
+                Sourcing order
+              </a>
             </nav>
             <div className="flex shrink-0 items-center gap-2">
               <Link href="/" className="hidden text-sm font-black text-white/70 transition hover:text-gold-400 sm:inline">
@@ -81,6 +88,12 @@ export default function ProductsPage() {
                   {product.title}
                 </a>
               ))}
+              <a
+                href="#sourcing-order"
+                className="inline-flex min-h-11 shrink-0 items-center rounded-full border border-slate-200 bg-[#f8fbff] px-5 text-sm font-black text-navy-950 transition hover:border-ember-500 hover:bg-ember-500 hover:text-white"
+              >
+                Sourcing order
+              </a>
           </div>
         </Container>
       </section>
@@ -145,6 +158,8 @@ export default function ProductsPage() {
           </div>
         </Container>
       </section>
+
+      <SourcingOrderForm />
     </main>
   );
 }

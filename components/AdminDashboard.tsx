@@ -345,7 +345,7 @@ export function AdminDashboard() {
           <h1 className="mt-2 text-3xl font-black text-navy-950 sm:text-4xl">Customer requests</h1>
         </div>
 
-        <div className="mb-6 grid gap-3 sm:grid-cols-3">
+        <div className="mb-6 grid gap-3 sm:grid-cols-4">
           <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-soft">
             <p className="text-xs font-black uppercase text-slate-500">Total</p>
             <p className="mt-2 text-3xl font-black text-navy-950">{summary.total}</p>
@@ -357,6 +357,10 @@ export function AdminDashboard() {
           <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-soft">
             <p className="text-xs font-black uppercase text-slate-500">Sourcing orders</p>
             <p className="mt-2 text-3xl font-black text-teal-600">{summary.sourcingOrders}</p>
+          </div>
+          <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-soft">
+            <p className="text-xs font-black uppercase text-slate-500">Payment alerts</p>
+            <p className="mt-2 text-3xl font-black text-gold-400">{summary.paymentAlerts}</p>
           </div>
         </div>
 

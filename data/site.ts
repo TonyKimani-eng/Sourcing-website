@@ -52,7 +52,8 @@ export const siteContent = {
     },
     {
       title: "Receive goods in Kenya",
-      description: "Track updates and receive your shipment safely once it arrives in Kenya."
+      description:
+        "Track updates and receive a notification when your item reaches the Nairobi pick-up station."
     }
   ],
   services: [
@@ -460,6 +461,11 @@ export const siteContent = {
       question: "How do payments work?",
       answer:
         "We provide a clear quote before purchase or shipping. Payment details are shared directly with you after confirming product, freight method, and service needs."
+    },
+    {
+      question: "How will I know when my item arrives?",
+      answer:
+        "We will notify you when your item reaches the Nairobi pick-up station so you know when it is ready for collection."
     },
     {
       question: "Are there restricted goods?",

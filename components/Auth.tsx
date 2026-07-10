@@ -745,7 +745,7 @@ function CartPanel({ onClose }: { onClose: () => void }) {
             <div className="rounded-lg border border-teal-500/30 bg-teal-500/10 p-4">
               <p className="text-lg font-black text-teal-700">Waiting confirmation</p>
               <p className="mt-2 text-sm font-bold leading-6 text-teal-800">
-                Your order and payment code were sent to Teekay admin. Once payment is confirmed, your account will show Order received.
+                Your order and payment code were sent to Teekay admin. Once payment is confirmed, your account will show Order received. We will notify you when your item reaches the Nairobi pick-up station.
               </p>
             </div>
             <button
@@ -1033,6 +1033,9 @@ function CustomerOrders({ userId }: { userId: string }) {
           {order.priceEstimate ? (
             <p className="text-sm font-black text-ember-500">{formatKes(order.priceEstimate)}</p>
           ) : null}
+          <p className="text-xs font-bold leading-5 text-slate-500">
+            We will notify you when your item reaches the Nairobi pick-up station.
+          </p>
         </div>
       ))}
     </div>

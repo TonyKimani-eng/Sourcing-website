@@ -104,12 +104,13 @@ export async function uploadInquiryPhotos(userId: string, files: File[]) {
     throw new Error("Firebase Storage is not configured.");
   }
 
+  const configuredStorage = storage;
   const uploadTime = Date.now();
 
   return Promise.all(
     files.map(async (file, index) => {
       const imageRef = ref(
-        storage,
+        configuredStorage,
         `sourcing-orders/${userId}/${uploadTime}-${index}-${safeFileName(file.name)}`
       );
 

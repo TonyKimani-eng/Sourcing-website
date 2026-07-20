@@ -34,7 +34,7 @@ function InquiryCard({ inquiry }: { inquiry: AdminInquiry }) {
     setSaveState("saving");
 
     try {
-      await updateInquiryStatus(inquiry.id, nextStatus);
+      await updateInquiryStatus(inquiry.id, nextStatus, inquiry.requestType);
       setSaveState("saved");
     } catch {
       setStatus(inquiry.status);
@@ -69,7 +69,11 @@ function InquiryCard({ inquiry }: { inquiry: AdminInquiry }) {
             className="min-h-10 rounded-lg border border-slate-200 bg-[#f8fbff] px-3 text-sm font-black text-navy-950 outline-none transition focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10"
           >
             {statuses.map((option) => (
-              <option value={option} key={option}>
+              <option
+                value={option}
+                key={option}
+                disabled={isSourcingOrder && hasPaymentAlert && option === "Reviewed"}
+              >
                 {option}
               </option>
             ))}
@@ -131,6 +135,12 @@ function InquiryCard({ inquiry }: { inquiry: AdminInquiry }) {
               </p>
             </div>
           ) : null}
+          {inquiry.priceEstimate ? (
+            <div>
+              <p className="text-xs font-black uppercase text-slate-500">Payment amount</p>
+              <p className="mt-1 text-sm font-black text-navy-950">{formatKes(inquiry.priceEstimate)}</p>
+            </div>
+          ) : null}
           {hasPaymentAlert ? (
             <button
               type="button"
@@ -138,7 +148,7 @@ function InquiryCard({ inquiry }: { inquiry: AdminInquiry }) {
               disabled={saveState === "saving"}
               className="inline-flex min-h-10 items-center justify-center self-end rounded-full bg-ember-500 px-4 text-xs font-black text-white transition hover:bg-navy-950 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              Confirm paid
+              {isSourcingOrder ? "Confirm sourcing fee" : "Confirm paid"}
             </button>
           ) : null}
           {inquiry.paymentNote ? (
@@ -182,7 +192,7 @@ function InquiryCard({ inquiry }: { inquiry: AdminInquiry }) {
               </div>
             </div>
           ) : null}
-          {inquiry.status !== "Reviewed" ? (
+          {inquiry.status !== "Reviewed" && !hasPaymentAlert ? (
             <button
               type="button"
               onClick={() => void saveStatus("Reviewed")}
@@ -191,6 +201,11 @@ function InquiryCard({ inquiry }: { inquiry: AdminInquiry }) {
             >
               Mark reviewed
             </button>
+          ) : null}
+          {hasPaymentAlert ? (
+            <p className="text-xs font-bold leading-5 text-ember-600">
+              Confirm the sourcing fee before reviewing this request.
+            </p>
           ) : null}
         </div>
       ) : isCartOrder ? (

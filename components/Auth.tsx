@@ -36,7 +36,7 @@ type AuthMode = "signin" | "signup";
 type AuthStep = "phone" | "code" | "profile";
 type CheckoutStep = "cart" | "payment" | "submitted";
 
-const manualPaymentName = "Tony Kimani";
+const manualPaymentName = siteContent.brand.paymentName;
 const manualPaymentPhone = siteContent.brand.phone;
 
 type User = {
@@ -967,6 +967,18 @@ function formatKes(value: number) {
 }
 
 function getCustomerOrderStatus(inquiry: SavedInquiry) {
+  if (inquiry.requestType === "sourcing") {
+    if (inquiry.paymentStatus?.toLowerCase().includes("payment submitted")) {
+      return "Waiting payment confirmation";
+    }
+
+    if (inquiry.status === "Paid") {
+      return "Payment confirmed - awaiting review";
+    }
+
+    return inquiry.status;
+  }
+
   if (inquiry.status === "Paid") {
     return "Order received";
   }

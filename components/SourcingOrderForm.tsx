@@ -3,9 +3,19 @@
 import Image from "next/image";
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/components/Auth";
+import { siteContent } from "@/data/site";
 import { saveInquiry, uploadInquiryPhotos } from "@/lib/inquiries";
 
 const maxPhotoCount = 4;
+const sourcingFeeKes = 5000;
+const manualPaymentName = siteContent.brand.paymentName;
+const manualPaymentPhone = siteContent.brand.phone;
+
+type SourcingStep = "details" | "payment" | "submitted";
+
+function formatKes(value: number) {
+  return `KSh ${value.toLocaleString("en-KE")}`;
+}
 
 function PhotoPreview({
   photo,
@@ -61,6 +71,8 @@ export function SourcingOrderForm() {
   const [description, setDescription] = useState("");
   const [contactMethod, setContactMethod] = useState("");
   const [photos, setPhotos] = useState<File[]>([]);
+  const [paymentCode, setPaymentCode] = useState("");
+  const [step, setStep] = useState<SourcingStep>("details");
   const [submitState, setSubmitState] = useState<"idle" | "submitting" | "submitted" | "error">("idle");
   const [message, setMessage] = useState("");
 
@@ -78,7 +90,7 @@ export function SourcingOrderForm() {
     setMessage("");
   };
 
-  const submitRequest = async (event: FormEvent<HTMLFormElement>) => {
+  const continueToPayment = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     if (!user?.phone) {
@@ -88,11 +100,38 @@ export function SourcingOrderForm() {
 
     const nextItemName = itemName.trim();
     const nextDescription = description.trim();
-    const nextContactMethod = contactMethod.trim() || user.email || user.phone;
-
     if (!nextItemName || !nextDescription) {
       setSubmitState("error");
       setMessage("Enter the item name and description before submitting.");
+      return;
+    }
+
+    setSubmitState("idle");
+    setMessage("");
+    setStep("payment");
+  };
+
+  const submitRequest = async () => {
+    if (!user?.phone) {
+      openAuth("signin");
+      return;
+    }
+
+    const nextItemName = itemName.trim();
+    const nextDescription = description.trim();
+    const nextContactMethod = contactMethod.trim() || user.email || user.phone;
+    const nextPaymentCode = paymentCode.trim();
+
+    if (!nextItemName || !nextDescription) {
+      setStep("details");
+      setSubmitState("error");
+      setMessage("Enter the item name and description before continuing.");
+      return;
+    }
+
+    if (!nextPaymentCode) {
+      setSubmitState("error");
+      setMessage("Paste the M-Pesa payment code before submitting your sourcing request.");
       return;
     }
 
@@ -109,7 +148,12 @@ export function SourcingOrderForm() {
           productCategory: "Sourcing order",
           description: nextDescription,
           contactMethod: nextContactMethod,
-          photoUrls
+          photoUrls,
+          priceEstimate: sourcingFeeKes,
+          paymentMethod: "Manual M-Pesa",
+          paymentStatus: "Payment submitted - awaiting admin confirmation",
+          paymentNote: "Customer submitted a manual M-Pesa code for the KES 5,000 sourcing fee. Confirm payment before reviewing the request.",
+          paymentCode: nextPaymentCode.toUpperCase()
         },
         {
           userId: user.uid,
@@ -123,8 +167,10 @@ export function SourcingOrderForm() {
       setDescription("");
       setContactMethod("");
       setPhotos([]);
+      setPaymentCode("");
+      setStep("submitted");
       setSubmitState("submitted");
-      setMessage("Sourcing order submitted. You can check review status from your account panel.");
+      setMessage("");
     } catch (error) {
       console.error("Could not submit sourcing order", error);
       setSubmitState("error");
@@ -149,7 +195,20 @@ export function SourcingOrderForm() {
           </p>
         </div>
 
-        <form className="grid gap-4 rounded-lg border border-slate-200 bg-white p-5 shadow-soft sm:p-6" onSubmit={submitRequest}>
+        <form
+          className="grid gap-4 rounded-lg border border-slate-200 bg-white p-5 shadow-soft sm:p-6"
+          onSubmit={(event) => {
+            if (step === "details") {
+              continueToPayment(event);
+              return;
+            }
+
+            event.preventDefault();
+            if (step === "payment") {
+              void submitRequest();
+            }
+          }}
+        >
           {!user ? (
             <div className="rounded-lg border border-gold-400/40 bg-gold-400/15 p-4">
               <p className="text-sm font-black text-navy-950">Sign in before submitting a sourcing order.</p>
@@ -163,6 +222,8 @@ export function SourcingOrderForm() {
             </div>
           ) : null}
 
+          {step === "details" ? (
+          <>
           <label className="grid gap-2">
             <span className="text-sm font-black text-navy-950">Item name</span>
             <input
@@ -226,6 +287,70 @@ export function SourcingOrderForm() {
             </div>
           ) : null}
 
+          <div className="flex items-center justify-between gap-4 border-t border-slate-200 pt-4">
+            <div>
+              <p className="text-xs font-black uppercase text-slate-500">Sourcing fee</p>
+              <p className="mt-1 text-xl font-black text-ember-500">{formatKes(sourcingFeeKes)}</p>
+            </div>
+            <p className="max-w-xs text-right text-xs font-bold leading-5 text-slate-500">
+              Deducted from your first order purchase.
+            </p>
+          </div>
+          </>
+          ) : null}
+
+          {step === "payment" ? (
+            <div className="grid gap-4">
+              <div className="rounded-lg border border-teal-500/25 bg-teal-500/10 p-4">
+                <p className="text-xs font-black uppercase text-teal-700">Sourcing request</p>
+                <p className="mt-1 text-lg font-black text-navy-950">{itemName}</p>
+                <p className="mt-2 text-sm font-bold leading-6 text-slate-600">
+                  Pay the sourcing fee, then enter the M-Pesa confirmation code to submit this request.
+                </p>
+              </div>
+
+              <div className="grid gap-3 border-y border-slate-200 py-4">
+                <div className="flex items-center justify-between gap-4">
+                  <span className="text-sm font-black text-slate-500">Amount</span>
+                  <span className="text-2xl font-black text-ember-500">{formatKes(sourcingFeeKes)}</span>
+                </div>
+                <div className="grid gap-2 sm:grid-cols-2">
+                  <div className="rounded-md bg-[#f8fbff] px-3 py-2">
+                    <p className="text-xs font-bold text-slate-500">M-Pesa name</p>
+                    <p className="mt-1 text-sm font-black text-navy-950">{manualPaymentName}</p>
+                  </div>
+                  <div className="rounded-md bg-[#f8fbff] px-3 py-2">
+                    <p className="text-xs font-bold text-slate-500">Mobile number</p>
+                    <p className="mt-1 text-sm font-black text-navy-950">{manualPaymentPhone}</p>
+                  </div>
+                </div>
+              </div>
+
+              <label className="grid gap-2">
+                <span className="text-sm font-black text-navy-950">M-Pesa payment code</span>
+                <input
+                  value={paymentCode}
+                  onChange={(event) => {
+                    setPaymentCode(event.target.value.toUpperCase());
+                    setSubmitState("idle");
+                    setMessage("");
+                  }}
+                  className="min-h-11 rounded-lg border border-slate-200 px-3 text-sm font-bold uppercase text-navy-950 outline-none transition focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10"
+                  placeholder="Paste payment code"
+                />
+              </label>
+            </div>
+          ) : null}
+
+          {step === "submitted" ? (
+            <div className="rounded-lg border border-teal-500/30 bg-teal-500/10 p-4">
+              <p className="text-lg font-black text-teal-700">Waiting payment confirmation</p>
+              <p className="mt-2 text-sm font-bold leading-6 text-teal-800">
+                Your sourcing request and payment code were sent to Teekay admin. You can follow its status from your account panel.
+              </p>
+            </div>
+          ) : null}
+
           {message ? (
             <p
               className={`rounded-md px-3 py-2 text-sm font-black leading-6 ${
@@ -236,13 +361,52 @@ export function SourcingOrderForm() {
             </p>
           ) : null}
 
-          <button
-            type="submit"
-            disabled={!user || submitState === "submitting"}
-            className="inline-flex min-h-11 items-center justify-center rounded-full bg-ember-500 px-5 text-sm font-black text-white transition hover:bg-navy-950 disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            {submitState === "submitting" ? "Submitting..." : "Submit sourcing order"}
-          </button>
+          {step === "details" ? (
+            <button
+              type="submit"
+              disabled={!user}
+              className="inline-flex min-h-11 items-center justify-center rounded-full bg-ember-500 px-5 text-sm font-black text-white transition hover:bg-navy-950 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {user ? `Continue to payment - ${formatKes(sourcingFeeKes)}` : "Sign in to continue"}
+            </button>
+          ) : null}
+
+          {step === "payment" ? (
+            <div className="grid gap-3 sm:grid-cols-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setStep("details");
+                  setSubmitState("idle");
+                  setMessage("");
+                }}
+                disabled={submitState === "submitting"}
+                className="inline-flex min-h-11 items-center justify-center rounded-full border border-slate-200 px-5 text-sm font-black text-navy-950 transition hover:border-teal-500 hover:text-teal-700 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                Back
+              </button>
+              <button
+                type="submit"
+                disabled={submitState === "submitting"}
+                className="inline-flex min-h-11 items-center justify-center rounded-full bg-ember-500 px-5 text-sm font-black text-white transition hover:bg-navy-950 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {submitState === "submitting" ? "Submitting..." : "I paid - submit request"}
+              </button>
+            </div>
+          ) : null}
+
+          {step === "submitted" ? (
+            <button
+              type="button"
+              onClick={() => {
+                setStep("details");
+                setSubmitState("idle");
+              }}
+              className="inline-flex min-h-11 items-center justify-center rounded-full bg-navy-950 px-5 text-sm font-black text-white transition hover:bg-ember-500"
+            >
+              Create another sourcing request
+            </button>
+          ) : null}
         </form>
       </div>
     </section>

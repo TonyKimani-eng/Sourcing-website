@@ -1,9 +1,10 @@
 import { ButtonLink } from "@/components/ButtonLink";
 import { Container } from "@/components/Container";
+import { routePath } from "@/data/paths";
 import { siteContent } from "@/data/site";
 
 export function ContactCta() {
-  const { brand, finalCta } = siteContent;
+  const { finalCta } = siteContent;
 
   return (
     <section id="contact" className="bg-[#f8fbff] px-4 py-16 sm:py-24">
@@ -16,7 +17,7 @@ export function ContactCta() {
           </h2>
           <p className="mx-auto mt-5 max-w-2xl text-base leading-7 text-white/[0.72] sm:text-lg sm:leading-8">{finalCta.description}</p>
           <div className="mt-8 flex justify-center">
-            <ButtonLink href={brand.whatsappUrl} variant="primary" className="w-full sm:w-auto">
+            <ButtonLink href={`${routePath("/products")}#sourcing-order`} variant="primary" className="w-full sm:w-auto">
               {finalCta.button}
             </ButtonLink>
           </div>

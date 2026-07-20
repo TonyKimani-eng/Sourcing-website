@@ -8,6 +8,7 @@ export const siteContent = {
     name: "Teekay Sourcing & Shipping",
     shortName: "Teekay",
     phone: "+254719241166",
+    paymentName: "Tony Kimani",
     whatsappUrl: "https://wa.me/254719241166",
     logo: "/teekay-logo.png"
   },
@@ -477,7 +478,7 @@ export const siteContent = {
     headline: "Ready to Import from China?",
     description:
       "Talk to Teekay Sourcing & Shipping today for a clear quote, sourcing guidance, and reliable delivery to Kenya.",
-    button: "WhatsApp"
+    button: "Start sourcing order"
   },
   chat: {
     title: "Customer Service Online",

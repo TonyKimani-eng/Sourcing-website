@@ -121,7 +121,11 @@ export function subscribeToAdminInquiries(
   );
 }
 
-export async function updateInquiryStatus(inquiryId: string, status: InquiryStatus) {
+export async function updateInquiryStatus(
+  inquiryId: string,
+  status: InquiryStatus,
+  requestType?: "product" | "sourcing"
+) {
   if (!db) {
     throw new Error("Firestore is not configured.");
   }
@@ -129,7 +133,7 @@ export async function updateInquiryStatus(inquiryId: string, status: InquiryStat
   if (status === "Paid") {
     await updateDoc(doc(db, "inquiries", inquiryId), {
       status,
-      paymentStatus: "Order received",
+      paymentStatus: requestType === "sourcing" ? "Sourcing fee confirmed" : "Order received",
       updatedAt: serverTimestamp()
     });
     return;

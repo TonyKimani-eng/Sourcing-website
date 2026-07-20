@@ -1,10 +1,59 @@
 "use client";
 
-import { FormEvent, useMemo, useState } from "react";
+import Image from "next/image";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/components/Auth";
 import { saveInquiry, uploadInquiryPhotos } from "@/lib/inquiries";
 
 const maxPhotoCount = 4;
+
+function PhotoPreview({
+  photo,
+  index,
+  onRemove
+}: {
+  photo: File;
+  index: number;
+  onRemove: () => void;
+}) {
+  const [previewUrl, setPreviewUrl] = useState("");
+
+  useEffect(() => {
+    const nextPreviewUrl = URL.createObjectURL(photo);
+    setPreviewUrl(nextPreviewUrl);
+
+    return () => URL.revokeObjectURL(nextPreviewUrl);
+  }, [photo]);
+
+  return (
+    <div className="min-w-0">
+      <div className="relative aspect-square overflow-hidden rounded-md border border-slate-200 bg-slate-100">
+        {previewUrl ? (
+          <Image
+            src={previewUrl}
+            alt={`Selected reference photo ${index + 1}`}
+            fill
+            unoptimized
+            sizes="(max-width: 640px) 44vw, 160px"
+            className="object-cover"
+          />
+        ) : null}
+        <button
+          type="button"
+          onClick={onRemove}
+          aria-label={`Remove ${photo.name}`}
+          title="Remove photo"
+          className="absolute right-2 top-2 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-navy-950 text-xl font-black leading-none text-white shadow-md transition hover:bg-ember-500 focus:outline-none focus:ring-4 focus:ring-white/80"
+        >
+          &times;
+        </button>
+      </div>
+      <p className="mt-1 truncate text-xs font-bold text-slate-500" title={photo.name}>
+        {photo.name}
+      </p>
+    </div>
+  );
+}
 
 export function SourcingOrderForm() {
   const { user, openAuth } = useAuth();
@@ -22,6 +71,12 @@ export function SourcingOrderForm() {
 
     return `${photos.length} photo${photos.length === 1 ? "" : "s"} selected`;
   }, [photos.length]);
+
+  const removePhoto = (photoIndex: number) => {
+    setPhotos((currentPhotos) => currentPhotos.filter((_, index) => index !== photoIndex));
+    setSubmitState("idle");
+    setMessage("");
+  };
 
   const submitRequest = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -147,14 +202,29 @@ export function SourcingOrderForm() {
               accept="image/*"
               multiple
               onChange={(event) => {
-                setPhotos(Array.from(event.target.files ?? []).slice(0, maxPhotoCount));
+                const selectedPhotos = Array.from(event.target.files ?? []);
+                setPhotos((currentPhotos) => [...currentPhotos, ...selectedPhotos].slice(0, maxPhotoCount));
                 setSubmitState("idle");
                 setMessage("");
+                event.target.value = "";
               }}
               className="rounded-lg border border-dashed border-slate-300 bg-[#f8fbff] px-3 py-3 text-sm font-bold text-slate-600 file:mr-4 file:rounded-full file:border-0 file:bg-navy-950 file:px-4 file:py-2 file:text-xs file:font-black file:text-white"
             />
             <span className="text-xs font-bold text-slate-500">{selectedPhotoText}. Up to {maxPhotoCount} images.</span>
           </label>
+
+          {photos.length ? (
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4" aria-label="Selected reference photos">
+              {photos.map((photo, index) => (
+                <PhotoPreview
+                  key={`${photo.name}-${photo.size}-${photo.lastModified}-${index}`}
+                  photo={photo}
+                  index={index}
+                  onRemove={() => removePhoto(index)}
+                />
+              ))}
+            </div>
+          ) : null}
 
           {message ? (
             <p

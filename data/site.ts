@@ -26,8 +26,8 @@ export const siteContent = {
     secondaryCta: "Chat on WhatsApp"
   },
   stats: [
-    { label: "By Air", value: "7 days" },
-    { label: "By Ship", value: "30 days" },
+    { label: "By Air", value: "7-10 days" },
+    { label: "By Ship", value: "35-40 days" },
     { label: "Air Freight", value: "13 USD per kg" },
     { label: "Sea Freight", value: "58k KES per CBM" },
     { label: "Sourcing Fee", value: "5k KES" }
@@ -445,7 +445,7 @@ export const siteContent = {
     {
       question: "How long does shipping from China to Kenya take?",
       answer:
-        "Air freight typically takes about 7 days, while sea freight typically takes about 30 days depending on cargo readiness, route schedules, and customs processing."
+        "Air freight typically takes about 7-10 days, while sea freight typically takes about 35-40 days depending on cargo readiness, route schedules, and customs processing."
     },
     {
       question: "Can you help me source products from China?",

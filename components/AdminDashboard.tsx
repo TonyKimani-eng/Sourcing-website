@@ -5,9 +5,10 @@ import Link from "next/link";
 import { AuthButtons, useAuth } from "@/components/Auth";
 import { Container } from "@/components/Container";
 import {
+  ADMIN_EMAIL,
   ADMIN_PHONE,
   AdminInquiry,
-  isAdminPhone,
+  isAdminUser,
   subscribeToAdminInquiries,
   updateInquiryStatus
 } from "@/lib/admin";
@@ -268,7 +269,7 @@ export function AdminDashboard() {
   );
 
   useEffect(() => {
-    if (!isAdminPhone(user?.phone)) {
+    if (!isAdminUser(user)) {
       setInquiries([]);
       setLoadState("ready");
       return undefined;
@@ -283,7 +284,7 @@ export function AdminDashboard() {
       },
       () => setLoadState("error")
     );
-  }, [user?.phone]);
+  }, [user]);
 
   if (!user) {
     return (
@@ -301,7 +302,7 @@ export function AdminDashboard() {
             <p className="text-xs font-black uppercase text-teal-600">Admin</p>
             <h1 className="mt-2 text-3xl font-black text-navy-950">Admin sign in required</h1>
             <p className="mt-3 leading-7 text-slate-600">
-              Sign in with the admin phone number ending in 1166 to view customer requests.
+              Sign in with the verified admin email to view customer requests.
             </p>
             <button
               type="button"
@@ -316,7 +317,7 @@ export function AdminDashboard() {
     );
   }
 
-  if (!isAdminPhone(user.phone)) {
+  if (!isAdminUser(user)) {
     return (
       <main className="min-h-screen bg-[#f8fbff] text-navy-950">
         <section className="bg-navy-950 py-5 text-white">
@@ -332,7 +333,7 @@ export function AdminDashboard() {
             <p className="text-xs font-black uppercase text-ember-500">Restricted</p>
             <h1 className="mt-2 text-3xl font-black text-navy-950">Admin access only</h1>
             <p className="mt-3 leading-7 text-slate-600">
-              This page only opens for {ADMIN_PHONE}. Your signed-in phone is not authorized.
+              This page only opens for the admin phone {ADMIN_PHONE} or verified admin email {ADMIN_EMAIL}.
             </p>
           </div>
         </Container>
@@ -348,7 +349,9 @@ export function AdminDashboard() {
             <Link href={routePath("/")} className="text-sm font-black text-white">
               Teekay Admin
             </Link>
-            <p className="mt-1 hidden text-xs font-bold text-white/60 sm:block">Signed in as {user.phone}</p>
+            <p className="mt-1 hidden text-xs font-bold text-white/60 sm:block">
+              Signed in as {user.phone || user.email}
+            </p>
           </div>
           <AuthButtons compact />
         </Container>
@@ -387,7 +390,7 @@ export function AdminDashboard() {
 
         {loadState === "error" ? (
           <div className="rounded-lg border border-ember-500/30 bg-ember-500/10 p-5 text-sm font-black text-ember-600">
-            Could not load admin requests. Confirm Firestore rules allow admin access for {ADMIN_PHONE}.
+            Could not load admin requests. Confirm the latest Firestore rules are published for {ADMIN_PHONE} and {ADMIN_EMAIL}.
           </div>
         ) : null}
 

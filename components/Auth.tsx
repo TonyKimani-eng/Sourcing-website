@@ -12,10 +12,13 @@ import {
 } from "react";
 import { createPortal } from "react-dom";
 import {
+  createUserWithEmailAndPassword,
   onAuthStateChanged,
   PhoneAuthProvider,
   RecaptchaVerifier,
   sendEmailVerification,
+  sendPasswordResetEmail,
+  signInWithEmailAndPassword,
   signInWithCredential,
   signOut as firebaseSignOut,
   updateProfile,
@@ -29,11 +32,11 @@ import {
   subscribeToUserInquiries,
 } from "@/lib/inquiries";
 import { siteContent } from "@/data/site";
-import { isAdminPhone } from "@/lib/admin";
+import { isAdminUser } from "@/lib/admin";
 import { routePath } from "@/data/paths";
 
 type AuthMode = "signin" | "signup";
-type AuthStep = "phone" | "code" | "profile";
+type AuthStep = "email" | "verify-email" | "reset-password" | "phone" | "code" | "profile";
 type CheckoutStep = "cart" | "payment" | "submitted";
 
 const manualPaymentName = siteContent.brand.paymentName;
@@ -88,23 +91,67 @@ function getAuthErrorMessage(error: unknown) {
       "auth/app-not-authorized": "This website domain is not authorized in Firebase Authentication.",
       "auth/billing-not-enabled": "Phone OTP needs Firebase billing enabled, or use a Firebase test phone number.",
       "auth/configuration-not-found": "Firebase Authentication is not enabled for this project.",
+      "auth/email-already-in-use": "An account already uses this email. Sign in or reset the password.",
       "auth/invalid-email": "Please enter a valid email address.",
+      "auth/invalid-credential": "The email or password is incorrect.",
       "auth/invalid-phone-number": "Enter the phone number in international format, for example +254712345678.",
       "auth/invalid-verification-code": "The OTP code is incorrect. Please check it and try again.",
       "auth/missing-verification-code": "Enter the OTP code sent to your phone.",
       "auth/network-request-failed": "Could not reach Firebase. Check your internet connection.",
-      "auth/operation-not-allowed": "Phone sign-in is not enabled in Firebase. Enable Phone under Authentication > Sign-in method.",
+      "auth/operation-not-allowed": "This sign-in method is not enabled in Firebase Authentication.",
       "auth/quota-exceeded": "SMS limit reached. Please try again later.",
       "auth/requires-recent-login": "Please sign in again before updating this account.",
       "auth/requests-from-referer-are-blocked": "This website domain is blocked by the Firebase API key settings.",
       "auth/too-many-requests": "Too many attempts. Please try again later.",
-      "auth/user-disabled": "This account has been disabled."
+      "auth/user-disabled": "This account has been disabled.",
+      "auth/weak-password": "Use a password with at least 6 characters."
     };
 
     return messages[error.code] ?? `Authentication failed (${error.code}). Please try again.`;
   }
 
   return "Authentication failed. Please try again.";
+}
+
+function PasswordField({ name, label, autoComplete }: { name: string; label: string; autoComplete: string }) {
+  const [isVisible, setIsVisible] = useState(false);
+
+  return (
+    <label className="grid gap-2">
+      <span className="text-sm font-black text-navy-950">{label}</span>
+      <span className="relative">
+        <input
+          name={name}
+          type={isVisible ? "text" : "password"}
+          required
+          minLength={6}
+          autoComplete={autoComplete}
+          className="min-h-12 w-full rounded-lg border border-slate-200 px-4 pr-12 font-bold text-navy-950 outline-none transition focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10"
+          placeholder="At least 6 characters"
+        />
+        <button
+          type="button"
+          onClick={() => setIsVisible((current) => !current)}
+          className="absolute inset-y-0 right-0 flex w-12 items-center justify-center text-slate-500 transition hover:text-navy-950"
+          aria-label={isVisible ? `Hide ${label.toLowerCase()}` : `Show ${label.toLowerCase()}`}
+          title={isVisible ? "Hide password" : "Show password"}
+        >
+          {isVisible ? (
+            <svg viewBox="0 0 24 24" aria-hidden="true" className="h-5 w-5 fill-none stroke-current" strokeWidth="2">
+              <path d="M3 3l18 18" />
+              <path d="M10.6 10.6a2 2 0 002.8 2.8" />
+              <path d="M9.9 4.2A10.7 10.7 0 0112 4c5.5 0 9 5.3 9 5.3a15.9 15.9 0 01-2.1 2.7M6.2 6.2C4.2 7.6 3 9.3 3 9.3s3.5 5.3 9 5.3c1 0 2-.2 2.8-.5" />
+            </svg>
+          ) : (
+            <svg viewBox="0 0 24 24" aria-hidden="true" className="h-5 w-5 fill-none stroke-current" strokeWidth="2">
+              <path d="M3 12s3.5-5.3 9-5.3S21 12 21 12s-3.5 5.3-9 5.3S3 12 3 12z" />
+              <circle cx="12" cy="12" r="2.5" />
+            </svg>
+          )}
+        </button>
+      </span>
+    </label>
+  );
 }
 
 function isValidPhone(value: string) {
@@ -139,19 +186,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [mode, setMode] = useState<AuthMode>("signin");
-  const [step, setStep] = useState<AuthStep>("phone");
+  const [step, setStep] = useState<AuthStep>("email");
   const [verificationId, setVerificationId] = useState("");
   const [phoneForVerification, setPhoneForVerification] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
 
   useEffect(() => {
     if (!auth) {
       return undefined;
     }
 
-    return onAuthStateChanged(auth, (firebaseUser) => {
+    const configuredAuth = auth;
+
+    return onAuthStateChanged(configuredAuth, (firebaseUser) => {
+      if (firebaseUser?.email && !firebaseUser.emailVerified && !firebaseUser.phoneNumber) {
+        setUser(null);
+        return;
+      }
+
       setUser(
         firebaseUser
           ? {
@@ -171,10 +226,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const resetAuthForm = useCallback(() => {
-    setStep("phone");
+    setStep("email");
     setVerificationId("");
     setPhoneForVerification("");
     setErrorMessage("");
+    setSuccessMessage("");
     setIsSubmitting(false);
   }, []);
 
@@ -246,6 +302,115 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       clearCart: () => setCartItems([])
     };
   }, [cartItems]);
+
+  const signUpWithEmail = async (
+    name: string,
+    email: string,
+    password: string,
+    confirmPassword: string
+  ) => {
+    if (!auth) {
+      setErrorMessage("Firebase is not configured yet. Add your Firebase env vars first.");
+      return;
+    }
+
+    if (!name.trim()) {
+      setErrorMessage("Enter your full name.");
+      return;
+    }
+
+    if (!email.trim()) {
+      setErrorMessage("Enter your email address.");
+      return;
+    }
+
+    if (password.length < 6) {
+      setErrorMessage("Use a password with at least 6 characters.");
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setErrorMessage("The passwords do not match.");
+      return;
+    }
+
+    setIsSubmitting(true);
+    setErrorMessage("");
+    setSuccessMessage("");
+
+    try {
+      const credential = await createUserWithEmailAndPassword(auth, email.trim(), password);
+      await updateProfile(credential.user, { displayName: name.trim() });
+      await sendEmailVerification(credential.user);
+      await firebaseSignOut(auth);
+      setMode("signin");
+      setStep("verify-email");
+      setSuccessMessage(`A verification link was sent to ${email.trim()}.`);
+    } catch (error) {
+      if (auth.currentUser && !auth.currentUser.emailVerified && !auth.currentUser.phoneNumber) {
+        await firebaseSignOut(auth);
+      }
+      setErrorMessage(getAuthErrorMessage(error));
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const signInWithEmail = async (email: string, password: string) => {
+    if (!auth) {
+      setErrorMessage("Firebase is not configured yet. Add your Firebase env vars first.");
+      return;
+    }
+
+    setIsSubmitting(true);
+    setErrorMessage("");
+    setSuccessMessage("");
+
+    try {
+      const credential = await signInWithEmailAndPassword(auth, email.trim(), password);
+
+      if (!credential.user.emailVerified) {
+        await sendEmailVerification(credential.user).catch(() => undefined);
+        await firebaseSignOut(auth);
+        setStep("verify-email");
+        setSuccessMessage(`Verify ${email.trim()} before signing in. We sent a new verification link.`);
+        return;
+      }
+
+      resetAuthForm();
+      setIsOpen(false);
+    } catch (error) {
+      setErrorMessage(getAuthErrorMessage(error));
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const resetEmailPassword = async (email: string) => {
+    if (!auth) {
+      setErrorMessage("Firebase is not configured yet. Add your Firebase env vars first.");
+      return;
+    }
+
+    if (!email.trim()) {
+      setErrorMessage("Enter your email address.");
+      return;
+    }
+
+    setIsSubmitting(true);
+    setErrorMessage("");
+    setSuccessMessage("");
+
+    try {
+      await sendPasswordResetEmail(auth, email.trim());
+      setStep("email");
+      setSuccessMessage(`A password reset link was sent to ${email.trim()}.`);
+    } catch (error) {
+      setErrorMessage(getAuthErrorMessage(error));
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   const sendPhoneCode = async (phone: string) => {
     if (!auth) {
@@ -370,6 +535,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const otp = String(formData.get("otp") ?? "").trim();
     const name = String(formData.get("name") ?? "").trim();
     const email = String(formData.get("email") ?? "").trim();
+    const password = String(formData.get("password") ?? "");
+    const confirmPassword = String(formData.get("confirmPassword") ?? "");
+
+    if (step === "email") {
+      if (mode === "signup") {
+        await signUpWithEmail(name, email, password, confirmPassword);
+      } else {
+        await signInWithEmail(email, password);
+      }
+      return;
+    }
+
+    if (step === "reset-password") {
+      await resetEmailPassword(email);
+      return;
+    }
 
     if (step === "phone") {
       await sendPhoneCode(phone);
@@ -385,7 +566,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const title = mode === "signin" ? "Sign in to purchase" : "Create account";
-  const eyebrow = mode === "signin" ? "Welcome back" : "Phone verification";
+  const eyebrow = step === "phone" || step === "code" || step === "profile"
+    ? "Phone verification"
+    : mode === "signin"
+      ? "Welcome back"
+      : "Email verification";
 
   return (
     <AuthContext.Provider value={value}>
@@ -407,7 +592,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               <div>
                 <p className="text-xs font-black uppercase text-teal-600">{eyebrow}</p>
                 <h2 id="auth-title" className="mt-1 text-2xl font-black text-navy-950">
-                  {step === "profile" ? "Complete your account" : title}
+                  {step === "profile"
+                    ? "Complete your account"
+                    : step === "verify-email"
+                      ? "Check your email"
+                      : step === "reset-password"
+                        ? "Reset password"
+                        : title}
                 </h2>
               </div>
               <button
@@ -431,6 +622,93 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 <div className="rounded-lg border border-ember-500/30 bg-ember-500/10 p-3 text-sm font-bold leading-6 text-ember-600">
                   {errorMessage}
                 </div>
+              ) : null}
+              {successMessage ? (
+                <div className="rounded-lg border border-teal-500/30 bg-teal-500/10 p-3 text-sm font-bold leading-6 text-teal-700">
+                  {successMessage}
+                </div>
+              ) : null}
+
+              {step === "email" ? (
+                <>
+                  {mode === "signup" ? (
+                    <label className="grid gap-2">
+                      <span className="text-sm font-black text-navy-950">Full name</span>
+                      <input
+                        name="name"
+                        type="text"
+                        required
+                        autoComplete="name"
+                        className="min-h-12 rounded-lg border border-slate-200 px-4 font-bold text-navy-950 outline-none transition focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10"
+                        placeholder="Your name"
+                      />
+                    </label>
+                  ) : null}
+                  <label className="grid gap-2">
+                    <span className="text-sm font-black text-navy-950">Email address</span>
+                    <input
+                      name="email"
+                      type="email"
+                      required
+                      autoComplete="email"
+                      className="min-h-12 rounded-lg border border-slate-200 px-4 font-bold text-navy-950 outline-none transition focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10"
+                      placeholder="you@example.com"
+                    />
+                  </label>
+                  <PasswordField
+                    name="password"
+                    label="Password"
+                    autoComplete={mode === "signup" ? "new-password" : "current-password"}
+                  />
+                  {mode === "signup" ? (
+                    <PasswordField name="confirmPassword" label="Confirm password" autoComplete="new-password" />
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setStep("reset-password");
+                        setErrorMessage("");
+                        setSuccessMessage("");
+                      }}
+                      className="justify-self-start text-sm font-black text-teal-600 underline decoration-teal-500 decoration-2 underline-offset-4"
+                    >
+                      Forgot password?
+                    </button>
+                  )}
+                </>
+              ) : null}
+
+              {step === "reset-password" ? (
+                <>
+                  <label className="grid gap-2">
+                    <span className="text-sm font-black text-navy-950">Email address</span>
+                    <input
+                      name="email"
+                      type="email"
+                      required
+                      autoComplete="email"
+                      className="min-h-12 rounded-lg border border-slate-200 px-4 font-bold text-navy-950 outline-none transition focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10"
+                      placeholder="you@example.com"
+                    />
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setStep("email");
+                      setErrorMessage("");
+                      setSuccessMessage("");
+                    }}
+                    className="justify-self-start text-sm font-black text-slate-600 underline decoration-slate-300 decoration-2 underline-offset-4"
+                  >
+                    Back to sign in
+                  </button>
+                </>
+              ) : null}
+
+              {step === "verify-email" ? (
+                <p className="text-sm font-bold leading-6 text-slate-600">
+                  Open the verification link in your email, then return here and sign in. Check your spam or trash folder if it is not in your inbox.
+                </p>
               ) : null}
 
               {step === "phone" ? (
@@ -497,34 +775,59 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               ) : null}
 
               <div id="auth-recaptcha" />
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="mt-1 inline-flex min-h-12 items-center justify-center rounded-full bg-ember-500 px-5 text-sm font-black text-white transition hover:bg-navy-950 disabled:cursor-not-allowed disabled:opacity-70"
-              >
-                {isSubmitting
-                  ? "Please wait..."
-                  : step === "phone"
-                    ? "Continue"
-                    : step === "code"
-                      ? "Verify"
-                      : "Finish"}
-              </button>
+              {step !== "verify-email" ? (
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="mt-1 inline-flex min-h-12 items-center justify-center rounded-full bg-ember-500 px-5 text-sm font-black text-white transition hover:bg-navy-950 disabled:cursor-not-allowed disabled:opacity-70"
+                >
+                  {isSubmitting
+                    ? "Please wait..."
+                    : step === "email"
+                      ? mode === "signup"
+                        ? "Create account"
+                        : "Sign in"
+                      : step === "reset-password"
+                        ? "Send reset link"
+                        : step === "phone"
+                          ? "Continue"
+                          : step === "code"
+                            ? "Verify"
+                            : "Finish"}
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMode("signin");
+                    setStep("email");
+                    setErrorMessage("");
+                    setSuccessMessage("");
+                  }}
+                  className="inline-flex min-h-12 items-center justify-center rounded-full bg-navy-950 px-5 text-sm font-black text-white transition hover:bg-ember-500"
+                >
+                  Return to sign in
+                </button>
+              )}
             </form>
 
-            <div className="mt-5 border-t border-slate-200 pt-4 text-center text-sm font-bold text-slate-600">
-              {mode === "signin" ? "Need an account?" : "Already have an account?"}{" "}
-              <button
-                type="button"
-                onClick={() => {
-                  setMode(mode === "signin" ? "signup" : "signin");
-                  resetAuthForm();
-                }}
-                className="font-black text-teal-600 underline decoration-teal-500 decoration-2 underline-offset-4"
-              >
-                {mode === "signin" ? "Sign up" : "Sign in"}
-              </button>
-            </div>
+            {step === "email" ? (
+              <div className="mt-5 border-t border-slate-200 pt-4 text-center text-sm font-bold text-slate-600">
+                <p>
+                  {mode === "signin" ? "Need an account?" : "Already have an account?"}{" "}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMode(mode === "signin" ? "signup" : "signin");
+                      resetAuthForm();
+                    }}
+                    className="font-black text-teal-600 underline decoration-teal-500 decoration-2 underline-offset-4"
+                  >
+                    {mode === "signin" ? "Sign up" : "Sign in"}
+                  </button>
+                </p>
+              </div>
+            ) : null}
           </div>
         </div>
       ) : null}
@@ -548,7 +851,7 @@ export function AuthButtons({ compact = false }: { compact?: boolean }) {
   if (user) {
     return (
       <div className="relative flex min-w-0 items-center gap-2">
-        {isAdminPhone(user.phone) ? (
+        {isAdminUser(user) ? (
           <a
             href={routePath("/admin")}
             className="inline-flex min-h-10 min-w-0 shrink-0 items-center rounded-full bg-gold-400 px-3 text-xs font-black text-navy-950 transition hover:bg-white sm:px-4"
@@ -642,7 +945,7 @@ function CartPanel({ onClose }: { onClose: () => void }) {
       return;
     }
 
-    if (!user?.phone) {
+    if (!user) {
       onClose();
       openAuth("signin");
       return;
@@ -665,7 +968,7 @@ function CartPanel({ onClose }: { onClose: () => void }) {
       return;
     }
 
-    if (!user?.phone) {
+    if (!user) {
       onClose();
       openAuth("signin");
       return;
@@ -873,7 +1176,7 @@ function CartPanel({ onClose }: { onClose: () => void }) {
             disabled={!items.length || isCheckingOut}
             className="mt-4 inline-flex min-h-11 w-full items-center justify-center rounded-full bg-ember-500 px-5 text-sm font-black text-white transition hover:bg-navy-950 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {isCheckingOut ? "Placing order..." : user?.phone ? "Place order - manual M-Pesa" : "Sign in to checkout"}
+            {isCheckingOut ? "Placing order..." : user ? "Place order - manual M-Pesa" : "Sign in to checkout"}
           </button>
           )}
           <p className="mt-3 rounded-md bg-teal-500/10 px-3 py-2 text-xs font-bold leading-5 text-teal-700">
@@ -1233,7 +1536,7 @@ export function PurchaseLink({
 }) {
   const { user, openAuth } = useAuthContext();
 
-  if (user?.phone) {
+  if (user) {
     if (!inquiry) {
       return (
         <a href={href} className={className}>

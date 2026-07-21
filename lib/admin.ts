@@ -9,6 +9,7 @@ import { db } from "@/lib/firebase";
 import { InquiryStatus, SavedInquiry } from "@/lib/inquiries";
 
 export const ADMIN_PHONE = "+254719241166";
+export const ADMIN_EMAIL = "toniekimanie@gmail.com";
 
 export type AdminInquiry = SavedInquiry & {
   userId: string;
@@ -56,6 +57,15 @@ function getTime(value: unknown) {
 
 export function isAdminPhone(phone: string | undefined) {
   return phone === ADMIN_PHONE;
+}
+
+export function isAdminUser(user: {
+  phone?: string;
+  email?: string;
+  emailVerified?: boolean;
+} | null | undefined) {
+  return isAdminPhone(user?.phone)
+    || (user?.email?.toLowerCase() === ADMIN_EMAIL && user.emailVerified === true);
 }
 
 export function subscribeToAdminInquiries(

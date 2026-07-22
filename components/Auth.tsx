@@ -536,14 +536,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 export function AuthButtons({ compact = false }: { compact?: boolean }) {
   const { user, openAuth, signOut } = useAuthContext();
   const { itemCount } = useCart();
-  const [isAccountOpen, setIsAccountOpen] = useState(false);
+  const [accountOwnerId, setAccountOwnerId] = useState<string | null>(null);
   const [isCartOpen, setIsCartOpen] = useState(false);
-
-  useEffect(() => {
-    if (!user) {
-      setIsAccountOpen(false);
-    }
-  }, [user]);
+  const isAccountOpen = Boolean(user && accountOwnerId === user.uid);
 
   if (user) {
     return (
@@ -567,7 +562,7 @@ export function AuthButtons({ compact = false }: { compact?: boolean }) {
         </button>
         <button
           type="button"
-          onClick={() => setIsAccountOpen(true)}
+          onClick={() => setAccountOwnerId(user.uid)}
           className="inline-flex min-h-10 min-w-0 shrink-0 items-center gap-2 rounded-full border border-white/20 px-3 text-xs font-black text-white transition hover:border-gold-400 hover:text-gold-400 sm:px-4"
           aria-haspopup="dialog"
           aria-expanded={isAccountOpen}
@@ -580,9 +575,9 @@ export function AuthButtons({ compact = false }: { compact?: boolean }) {
         {isAccountOpen ? (
           <AccountPanel
             user={user}
-            onClose={() => setIsAccountOpen(false)}
+            onClose={() => setAccountOwnerId(null)}
             onSignOut={async () => {
-              setIsAccountOpen(false);
+              setAccountOwnerId(null);
               await signOut();
             }}
           />
@@ -995,8 +990,6 @@ function CustomerOrders({ userId }: { userId: string }) {
   const [loadState, setLoadState] = useState<"loading" | "ready" | "error">("loading");
 
   useEffect(() => {
-    setLoadState("loading");
-
     return subscribeToUserInquiries(
       userId,
       (nextOrders) => {
@@ -1059,13 +1052,6 @@ function EmailAccountAction({ user }: { user: User }) {
   const [emailValue, setEmailValue] = useState(user.email);
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const [verifyStatus, setVerifyStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
-
-  useEffect(() => {
-    setEmailValue(user.email);
-    setIsEditing(!user.email);
-    setSaveStatus("idle");
-    setVerifyStatus("idle");
-  }, [user.email]);
 
   const saveEmail = async () => {
     const nextEmail = emailValue.trim();

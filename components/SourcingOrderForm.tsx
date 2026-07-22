@@ -26,28 +26,23 @@ function PhotoPreview({
   index: number;
   onRemove: () => void;
 }) {
-  const [previewUrl, setPreviewUrl] = useState("");
+  const [previewUrl] = useState(() => URL.createObjectURL(photo));
 
   useEffect(() => {
-    const nextPreviewUrl = URL.createObjectURL(photo);
-    setPreviewUrl(nextPreviewUrl);
-
-    return () => URL.revokeObjectURL(nextPreviewUrl);
-  }, [photo]);
+    return () => URL.revokeObjectURL(previewUrl);
+  }, [previewUrl]);
 
   return (
     <div className="min-w-0">
       <div className="relative aspect-square overflow-hidden rounded-md border border-slate-200 bg-slate-100">
-        {previewUrl ? (
-          <Image
-            src={previewUrl}
-            alt={`Selected reference photo ${index + 1}`}
-            fill
-            unoptimized
-            sizes="(max-width: 640px) 44vw, 160px"
-            className="object-cover"
-          />
-        ) : null}
+        <Image
+          src={previewUrl}
+          alt={`Selected reference photo ${index + 1}`}
+          fill
+          unoptimized
+          sizes="(max-width: 640px) 44vw, 160px"
+          className="object-cover"
+        />
         <button
           type="button"
           onClick={onRemove}

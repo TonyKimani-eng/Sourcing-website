@@ -24,11 +24,6 @@ function InquiryCard({ inquiry }: { inquiry: AdminInquiry }) {
   const [status, setStatus] = useState<InquiryStatus>(inquiry.status);
   const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "error">("idle");
 
-  useEffect(() => {
-    setStatus(inquiry.status);
-    setSaveState("idle");
-  }, [inquiry.status]);
-
   const saveStatus = async (nextStatus: InquiryStatus) => {
     setStatus(nextStatus);
     setSaveState("saving");
@@ -269,12 +264,8 @@ export function AdminDashboard() {
 
   useEffect(() => {
     if (!isAdminPhone(user?.phone)) {
-      setInquiries([]);
-      setLoadState("ready");
       return undefined;
     }
-
-    setLoadState("loading");
 
     return subscribeToAdminInquiries(
       (nextInquiries) => {

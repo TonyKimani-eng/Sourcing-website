@@ -93,7 +93,7 @@ export function SourcingOrderForm() {
   const continueToPayment = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    if (!user) {
+    if (!user?.phone) {
       openAuth("signin");
       return;
     }
@@ -112,7 +112,7 @@ export function SourcingOrderForm() {
   };
 
   const submitRequest = async () => {
-    if (!user) {
+    if (!user?.phone) {
       openAuth("signin");
       return;
     }

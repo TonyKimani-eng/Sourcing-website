@@ -211,6 +211,16 @@ export const siteContent = {
         ]
       },
       {
+        name: "Apple iPhone 13 mini",
+        brand: "Apple",
+        image: "/13%20series/iphone%2013MINI.jpg",
+        colorOptions: ["Starlight", "Midnight", "Blue", "Pink", "Green", "(PRODUCT)RED"],
+        storageOptions: [
+          { storage: "128", price: 29000 },
+          { storage: "256", price: 32000 }
+        ]
+      },
+      {
         name: "Apple iPhone 13",
         brand: "Apple",
         image: "/13%20series/IPHONE13.jpg",

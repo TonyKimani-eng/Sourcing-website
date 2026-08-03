@@ -8,7 +8,7 @@ export function WarehouseAddresses() {
       <Container>
         <SectionHeader
           eyebrow="Warehouses and pick-up"
-          title="Send cargo to China and collect in Nairobi"
+          title="Send cargo from China and collect in Nairobi"
           description="Use the sea or air warehouse details after confirming your shipment method, then collect arrived goods from our Nairobi pick-up point."
         />
         <div className="grid gap-5 lg:grid-cols-2">

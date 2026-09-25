@@ -3,7 +3,6 @@
 import { useMemo, useState } from "react";
 import { PurchaseLink } from "@/components/Auth";
 import { Container } from "@/components/Container";
-import { siteContent } from "@/data/site";
 
 const airUsdPerKg = 13;
 const seaKesPerCbm = 58000;
@@ -52,7 +51,6 @@ function Field({
 }
 
 export function ImportCostAnalyzer() {
-  const { brand } = siteContent;
   const [method, setMethod] = useState<"air" | "sea">("air");
   const [weightKg, setWeightKg] = useState(12);
   const [volumeCbm, setVolumeCbm] = useState(0.35);
@@ -79,12 +77,6 @@ export function ImportCostAnalyzer() {
       margin
     };
   }, [method, weightKg, volumeCbm, productCost, quantity, sellPrice, usdRate]);
-
-  const whatsappText = encodeURIComponent(
-    `Hello Teekay, I used the import cost analyzer. Method: ${method.toUpperCase()}, estimated landed cost: ${formatKes(
-      result.totalCost
-    )}. Please confirm my quote.`
-  );
 
   return (
     <section id="cost-analyzer" className="bg-white py-16 sm:py-24">
@@ -173,7 +165,7 @@ export function ImportCostAnalyzer() {
                 Estimates exclude duty, taxes, supplier changes, and special handling. Teekay can confirm the final quote.
               </p>
               <PurchaseLink
-                href={`${brand.whatsappUrl}?text=${whatsappText}`}
+                href="#online-chat"
                 className="inline-flex min-h-11 shrink-0 items-center justify-center rounded-full bg-ember-500 px-5 text-sm font-black text-white transition hover:bg-navy-950"
               >
                 Confirm quote

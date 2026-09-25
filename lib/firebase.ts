@@ -7,7 +7,7 @@ function envValue(value: string | undefined) {
   return value?.trim().replace(/^["']|["']$/g, "");
 }
 
-const firebaseConfig = {
+export const firebaseConfig = {
   apiKey: envValue(process.env.NEXT_PUBLIC_FIREBASE_API_KEY),
   authDomain: envValue(process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN),
   projectId: envValue(process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID),

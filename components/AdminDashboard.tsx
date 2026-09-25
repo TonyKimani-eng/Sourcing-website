@@ -13,8 +13,10 @@ import {
 } from "@/lib/admin";
 import { InquiryStatus } from "@/lib/inquiries";
 import { routePath } from "@/data/paths";
+import { AdminChatPanel } from "@/components/AdminChatPanel";
+import { AdminTestimonials } from "@/components/AdminTestimonials";
 
-const statuses: InquiryStatus[] = ["New", "Reviewed", "Contacted", "Quoted", "Paid", "Shipped", "Completed"];
+const statuses: InquiryStatus[] = ["New", "Reviewed", "Contacted", "Quoted", "Paid", "Shipped", "Delivered", "Received", "Completed"];
 
 function formatKes(value: number) {
   return `KSh ${Math.round(value).toLocaleString("en-KE")}`;
@@ -72,9 +74,9 @@ function InquiryCard({ inquiry }: { inquiry: AdminInquiry }) {
               <option
                 value={option}
                 key={option}
-                disabled={isSourcingOrder && hasPaymentAlert && option === "Reviewed"}
+                disabled={(isSourcingOrder && hasPaymentAlert && option === "Reviewed") || option === "Received"}
               >
-                {option}
+                {option === "Received" ? "Received (customer confirmed)" : option}
               </option>
             ))}
           </select>
@@ -402,6 +404,8 @@ export function AdminDashboard() {
             <InquiryCard inquiry={inquiry} key={inquiry.id} />
           ))}
         </div>
+        <AdminTestimonials />
+        <AdminChatPanel />
       </Container>
     </main>
   );

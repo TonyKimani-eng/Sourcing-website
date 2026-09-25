@@ -7,6 +7,10 @@ service cloud.firestore {
         && request.auth.token.phone_number == "+254719241166";
     }
 
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
     match /inquiries/{inquiryId} {
       allow create: if request.auth != null
         && request.resource.data.userId == request.auth.uid
@@ -16,9 +20,118 @@ service cloud.firestore {
         || (request.auth != null
         && resource.data.userId == request.auth.uid);
 
-      allow update: if isAdmin();
+      allow update: if isAdmin()
+        || (isSignedIn()
+        && resource.data.userId == request.auth.uid
+        && resource.data.status == "Delivered"
+        && request.resource.data.status == "Received"
+        && request.resource.data.customerConfirmedReceived == true
+        && request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(["status", "customerConfirmedReceived", "customerReceivedAt", "updatedAt"]));
 
       allow delete: if false;
+    }
+
+    match /testimonials/{testimonialId} {
+      allow read: if resource.data.published == true
+        || isAdmin()
+        || (isSignedIn() && resource.data.userId == request.auth.uid);
+
+      allow create: if isSignedIn()
+        && testimonialId == request.resource.data.inquiryId
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.published == false
+        && request.resource.data.rating is int
+        && request.resource.data.rating >= 1
+        && request.resource.data.rating <= 5
+        && request.resource.data.reviewerName is string
+        && request.resource.data.reviewerName.size() > 0
+        && request.resource.data.reviewerName.size() <= 80
+        && request.resource.data.message is string
+        && request.resource.data.message.size() >= 10
+        && request.resource.data.message.size() <= 600
+        && request.resource.data.orderLabel is string
+        && request.resource.data.orderLabel.size() > 0
+        && request.resource.data.orderLabel.size() <= 80
+        && request.resource.data.keys().hasOnly([
+          "inquiryId", "userId", "reviewerName", "rating", "message",
+          "orderLabel", "published", "createdAt", "updatedAt"
+        ])
+        && get(/databases/$(database)/documents/inquiries/$(testimonialId)).data.userId == request.auth.uid
+        && get(/databases/$(database)/documents/inquiries/$(testimonialId)).data.status == "Received";
+
+      allow update: if isAdmin();
+      allow delete: if false;
+    }
+
+    match /chats/{chatId} {
+      allow create: if isSignedIn()
+        && request.auth.uid == chatId
+        && request.resource.data.visitorUid == request.auth.uid
+        && request.resource.data.status == "open"
+        && request.resource.data.visitorName is string
+        && request.resource.data.visitorName.size() > 0
+        && request.resource.data.visitorName.size() <= 80
+        && request.resource.data.visitorContact is string
+        && request.resource.data.visitorContact.size() > 0
+        && request.resource.data.visitorContact.size() <= 120
+        && request.resource.data.lastMessage is string
+        && request.resource.data.lastMessage.size() > 0
+        && request.resource.data.lastMessage.size() <= 1000
+        && request.resource.data.lastSender == "visitor"
+        && request.resource.data.unreadByAdmin == 1
+        && request.resource.data.keys().hasOnly([
+          "visitorUid", "visitorName", "visitorContact", "lastMessage",
+          "lastSender", "unreadByAdmin", "status", "createdAt", "updatedAt"
+        ]);
+
+      allow read: if isAdmin()
+        || (isSignedIn() && request.auth.uid == chatId);
+
+      allow update: if isAdmin()
+        || (isSignedIn()
+        && request.auth.uid == chatId
+        && resource.data.visitorUid == request.auth.uid
+        && request.resource.data.visitorUid == request.auth.uid
+        && request.resource.data.lastSender == "visitor"
+        && request.resource.data.status == "open"
+        && request.resource.data.unreadByAdmin == 1
+        && request.resource.data.visitorName is string
+        && request.resource.data.visitorName.size() > 0
+        && request.resource.data.visitorName.size() <= 80
+        && request.resource.data.visitorContact is string
+        && request.resource.data.visitorContact.size() > 0
+        && request.resource.data.visitorContact.size() <= 120
+        && request.resource.data.lastMessage is string
+        && request.resource.data.lastMessage.size() > 0
+        && request.resource.data.lastMessage.size() <= 1000
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          "visitorName", "visitorContact", "lastMessage", "lastSender",
+          "unreadByAdmin", "status", "createdAt", "updatedAt"
+        ]));
+
+      allow delete: if false;
+
+      match /messages/{messageId} {
+        allow read: if isAdmin()
+          || (isSignedIn() && request.auth.uid == chatId);
+
+        allow create: if (isAdmin()
+          && request.resource.data.sender == "admin"
+          && request.resource.data.text is string
+          && request.resource.data.text.size() > 0
+          && request.resource.data.text.size() <= 1000
+          && request.resource.data.keys().hasOnly(["sender", "text", "createdAt"]))
+          || (isSignedIn()
+          && request.auth.uid == chatId
+          && request.resource.data.sender == "visitor"
+          && request.resource.data.text is string
+          && request.resource.data.text.size() > 0
+          && request.resource.data.text.size() <= 1000
+          && request.resource.data.keys().hasOnly(["sender", "text", "createdAt"]));
+
+        allow update, delete: if false;
+      }
     }
   }
 }

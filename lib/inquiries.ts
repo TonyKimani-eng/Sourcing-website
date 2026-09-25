@@ -1,16 +1,27 @@
 import {
   addDoc,
   collection,
+  doc,
   onSnapshot,
   query,
   serverTimestamp,
+  updateDoc,
   where
 } from "firebase/firestore";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import { db } from "@/lib/firebase";
 import { storage } from "@/lib/firebase";
 
-export type InquiryStatus = "New" | "Reviewed" | "Contacted" | "Quoted" | "Paid" | "Shipped" | "Completed";
+export type InquiryStatus =
+  | "New"
+  | "Reviewed"
+  | "Contacted"
+  | "Quoted"
+  | "Paid"
+  | "Shipped"
+  | "Delivered"
+  | "Received"
+  | "Completed";
 
 export type InquiryInput = {
   requestType?: "product" | "sourcing";
@@ -91,6 +102,19 @@ export async function saveInquiry(inquiry: InquiryInput, customer: CustomerInput
     ...customer,
     status: "New" satisfies InquiryStatus,
     createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp()
+  });
+}
+
+export async function confirmInquiryReceived(inquiryId: string) {
+  if (!db) {
+    throw new Error("Firestore is not configured.");
+  }
+
+  await updateDoc(doc(db, "inquiries", inquiryId), {
+    status: "Received" satisfies InquiryStatus,
+    customerConfirmedReceived: true,
+    customerReceivedAt: serverTimestamp(),
     updatedAt: serverTimestamp()
   });
 }

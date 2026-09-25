@@ -9,10 +9,9 @@ export const siteContent = {
     shortName: "Teekay",
     phone: "+254719241166",
     paymentName: "Tony Kimani",
-    whatsappUrl: "https://wa.me/254719241166",
     logo: "/teekay-logo.png"
   },
-  nav: ["Products", "How It Works", "Services", "Pricing", "Cost Analyzer", "Warehouses", "FAQ"],
+  nav: ["Products", "How It Works", "Services", "Reviews", "Pricing", "Cost Analyzer", "Warehouses", "FAQ"],
   topBar: {
     location: "China warehouses serving Kenya importers",
     help: "Need help? Chat online",
@@ -24,7 +23,7 @@ export const siteContent = {
     subheadline:
       "We help individuals and businesses source products from China and deliver safely to Kenya by air or sea.",
     primaryCta: "Get Free Consultation",
-    secondaryCta: "Chat on WhatsApp"
+    secondaryCta: "Chat online"
   },
   stats: [
     { label: "By Air", value: "7-10 days" },
@@ -41,7 +40,7 @@ export const siteContent = {
   howItWorks: [
     {
       title: "Send product link",
-      description: "Share the product link, photo, or supplier details through WhatsApp."
+      description: "Share the product link, photo, or supplier details through the website order form or online chat."
     },
     {
       title: "We source and verify",
@@ -409,7 +408,7 @@ export const siteContent = {
     "Reliable China sourcing partner",
     "Affordable rates",
     "Fast communication",
-    "WhatsApp support",
+    "Online support",
     "Secure cargo handling",
     "Shipment updates"
   ],
@@ -493,6 +492,6 @@ export const siteContent = {
   chat: {
     title: "Customer Service Online",
     status: "Available for sourcing, rates, and shipment updates",
-    whatsappLabel: "WhatsApp"
+    openLabel: "Chat with us"
   }
 };

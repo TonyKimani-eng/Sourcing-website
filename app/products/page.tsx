@@ -7,6 +7,7 @@ import { IphoneProductCard } from "@/components/IphoneProductCard";
 import { SourcingOrderForm } from "@/components/SourcingOrderForm";
 import { assetPath } from "@/data/paths";
 import { siteContent } from "@/data/site";
+import { CustomerChat } from "@/components/CustomerChat";
 
 export const metadata: Metadata = {
   title: `Products | ${siteContent.brand.name}`,
@@ -144,7 +145,7 @@ export default function ProductsPage() {
                   ))}
                 </div>
                 <PurchaseLink
-                  href={`${brand.whatsappUrl}?text=Hello%20Teekay%2C%20I%20want%20to%20source%20${encodeURIComponent(product.title)}.`}
+                  href="#online-chat"
                   inquiry={{
                     productName: product.title,
                     productCategory: product.title
@@ -160,6 +161,7 @@ export default function ProductsPage() {
       </section>
 
       <SourcingOrderForm />
+      <CustomerChat />
     </main>
   );
 }

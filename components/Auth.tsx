@@ -25,9 +25,15 @@ import { auth, isFirebaseConfigured } from "@/lib/firebase";
 import {
   InquiryInput,
   SavedInquiry,
+  confirmInquiryReceived,
   saveInquiry,
   subscribeToUserInquiries,
 } from "@/lib/inquiries";
+import {
+  saveTestimonial,
+  subscribeToUserTestimonials,
+  Testimonial
+} from "@/lib/testimonials";
 import { siteContent } from "@/data/site";
 import { isAdminPhone } from "@/lib/admin";
 import { routePath } from "@/data/paths";
@@ -937,7 +943,7 @@ function AccountPanel({
             tone={user.phone ? "success" : "warning"}
           />
           <EmailAccountAction user={user} />
-          <CustomerOrders userId={user.uid} />
+          <CustomerOrders user={user} />
         </div>
 
         <div className="mt-6 flex flex-col gap-3 border-t border-slate-200 pt-5 sm:flex-row sm:justify-end">
@@ -990,22 +996,42 @@ function getCustomerOrderStatus(inquiry: SavedInquiry) {
   return inquiry.status;
 }
 
-function CustomerOrders({ userId }: { userId: string }) {
+function CustomerOrders({ user }: { user: User }) {
   const [orders, setOrders] = useState<SavedInquiry[]>([]);
+  const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [loadState, setLoadState] = useState<"loading" | "ready" | "error">("loading");
+  const [actionOrderId, setActionOrderId] = useState("");
+  const [actionError, setActionError] = useState("");
 
   useEffect(() => {
     setLoadState("loading");
 
     return subscribeToUserInquiries(
-      userId,
+      user.uid,
       (nextOrders) => {
         setOrders(nextOrders);
         setLoadState("ready");
       },
       () => setLoadState("error")
     );
-  }, [userId]);
+  }, [user.uid]);
+
+  useEffect(
+    () => subscribeToUserTestimonials(user.uid, setTestimonials, () => undefined),
+    [user.uid]
+  );
+
+  const confirmReceived = async (orderId: string) => {
+    setActionOrderId(orderId);
+    setActionError("");
+    try {
+      await confirmInquiryReceived(orderId);
+    } catch {
+      setActionError("Could not confirm receipt. Please try again.");
+    } finally {
+      setActionOrderId("");
+    }
+  };
 
   return (
     <div className="grid gap-3 rounded-lg border border-slate-200 p-3">
@@ -1028,7 +1054,7 @@ function CustomerOrders({ userId }: { userId: string }) {
           No orders yet.
         </span>
       ) : null}
-      {orders.slice(0, 5).map((order) => (
+      {orders.map((order) => (
         <div className="grid gap-2 rounded-md bg-[#f8fbff] p-3" key={order.id}>
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
@@ -1048,9 +1074,112 @@ function CustomerOrders({ userId }: { userId: string }) {
           {order.priceEstimate ? (
             <p className="text-sm font-black text-ember-500">{formatKes(order.priceEstimate)}</p>
           ) : null}
+          {order.status === "Delivered" ? (
+            <div className="mt-1 rounded-md border border-teal-500/25 bg-white p-3">
+              <p className="text-xs font-bold leading-5 text-slate-600">
+                Teekay marked this shipment delivered. Confirm only after the goods are in your hands.
+              </p>
+              <button
+                type="button"
+                onClick={() => void confirmReceived(order.id)}
+                disabled={actionOrderId === order.id}
+                className="mt-2 inline-flex min-h-9 items-center justify-center rounded-full bg-teal-600 px-4 text-xs font-black text-white transition hover:bg-navy-950 disabled:opacity-60"
+              >
+                {actionOrderId === order.id ? "Confirming..." : "I received my goods"}
+              </button>
+            </div>
+          ) : null}
+          {order.status === "Received" ? (
+            testimonials.some((testimonial) => testimonial.inquiryId === order.id) ? (
+              <p className="mt-1 rounded-md bg-teal-500/10 px-3 py-2 text-xs font-bold text-teal-700">
+                Review submitted{testimonials.find((item) => item.inquiryId === order.id)?.published ? " and published." : " for approval."}
+              </p>
+            ) : (
+              <ReviewForm order={order} user={user} />
+            )
+          ) : null}
         </div>
       ))}
+      {actionError ? <p className="text-xs font-bold text-ember-600">{actionError}</p> : null}
     </div>
+  );
+}
+
+function ReviewForm({ order, user }: { order: SavedInquiry; user: User }) {
+  const [rating, setRating] = useState(5);
+  const [message, setMessage] = useState("");
+  const [submitState, setSubmitState] = useState<"idle" | "saving" | "saved" | "error">("idle");
+
+  const submitReview = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (message.trim().length < 10) {
+      setSubmitState("error");
+      return;
+    }
+
+    setSubmitState("saving");
+    try {
+      await saveTestimonial({
+        inquiryId: order.id,
+        userId: user.uid,
+        reviewerName: user.name,
+        rating,
+        message,
+        orderLabel: order.requestType === "sourcing" ? "Sourcing & delivery" : "China to Kenya delivery"
+      });
+      setSubmitState("saved");
+    } catch {
+      setSubmitState("error");
+    }
+  };
+
+  if (submitState === "saved") {
+    return (
+      <p className="mt-1 rounded-md bg-teal-500/10 px-3 py-2 text-xs font-bold text-teal-700">
+        Thank you. Your verified review is awaiting approval.
+      </p>
+    );
+  }
+
+  return (
+    <form className="mt-1 grid gap-2 rounded-md border border-gold-400/45 bg-white p-3" onSubmit={submitReview}>
+      <div className="flex items-center justify-between gap-3">
+        <p className="text-xs font-black text-navy-950">Share your delivery experience</p>
+        <span className="text-[10px] font-black uppercase text-teal-700">Verified order</span>
+      </div>
+      <select
+        value={rating}
+        onChange={(event) => setRating(Number(event.target.value))}
+        className="min-h-9 rounded-md border border-slate-200 px-3 text-xs font-black text-navy-950"
+        aria-label="Review rating"
+      >
+        <option value={5}>5 stars</option>
+        <option value={4}>4 stars</option>
+        <option value={3}>3 stars</option>
+        <option value={2}>2 stars</option>
+        <option value={1}>1 star</option>
+      </select>
+      <textarea
+        value={message}
+        onChange={(event) => setMessage(event.target.value)}
+        required
+        minLength={10}
+        maxLength={600}
+        rows={3}
+        placeholder="How did your goods arrive?"
+        className="resize-none rounded-md border border-slate-200 px-3 py-2 text-xs font-semibold leading-5 outline-none focus:border-teal-500"
+      />
+      <button
+        type="submit"
+        disabled={submitState === "saving"}
+        className="inline-flex min-h-9 items-center justify-center rounded-full bg-navy-950 px-4 text-xs font-black text-white transition hover:bg-teal-600 disabled:opacity-60"
+      >
+        {submitState === "saving" ? "Submitting..." : "Submit verified review"}
+      </button>
+      {submitState === "error" ? (
+        <p className="text-xs font-bold text-ember-600">Use at least 10 characters and try again.</p>
+      ) : null}
+    </form>
   );
 }
 
@@ -1232,13 +1361,21 @@ export function PurchaseLink({
   inquiry?: InquiryInput;
 }) {
   const { user, openAuth } = useAuthContext();
+  const followDestination = () => {
+    if (href === "#online-chat") {
+      window.dispatchEvent(new Event("teekay:open-chat"));
+      return;
+    }
+
+    window.location.href = href;
+  };
 
   if (user?.phone) {
     if (!inquiry) {
       return (
-        <a href={href} className={className}>
+        <button type="button" onClick={followDestination} className={className}>
           {children}
-        </a>
+        </button>
       );
     }
 
@@ -1256,7 +1393,7 @@ export function PurchaseLink({
           } catch (error) {
             console.error("Could not save inquiry", error);
           } finally {
-            window.location.href = href;
+            followDestination();
           }
         }}
         className={className}

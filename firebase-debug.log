@@ -1,0 +1,40 @@
+[debug] [2026-10-18T16:36:33.998Z] ----------------------------------------------------------------------
+[debug] [2026-10-18T16:36:34.002Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\Administrator\AppData\Local\npm-cache\_npx\ba4f1959e38407b5\node_modules\firebase-tools\lib\bin\firebase.js login --reauth
+[debug] [2026-10-18T16:36:34.002Z] CLI Version:   15.34.0
+[debug] [2026-10-18T16:36:34.002Z] Platform:      win32
+[debug] [2026-10-18T16:36:34.002Z] Node Version:  v24.15.0
+[debug] [2026-10-18T16:36:34.002Z] Detected Agent: unknown
+[debug] [2026-10-18T16:36:34.003Z] Time:          Sun Oct 18 2026 10:36:34 GMT-0600 (Mountain Daylight Time)
+[debug] [2026-10-18T16:36:34.003Z] ----------------------------------------------------------------------
+[debug] 
+[info] 
+[info] Visit this URL on this device to log in:
+[info] https://accounts.google.com/o/oauth2/auth?client_id=563584335869-fgrhgmd47bqnekij5i8b5pr03ho849e6.apps.googleusercontent.com&scope=email%20openid%20https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fcloudplatformprojects.readonly%20https%3A%2F%2Fwww.googleapis.com%2Fauth%2Ffirebase%20https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fcloud-platform&response_type=code&state=395776433&redirect_uri=http%3A%2F%2Flocalhost%3A9005
+[info] 
+[info] Waiting for authentication...
+[debug] [2026-10-18T16:37:24.478Z] >>> [apiv2][query] POST https://accounts.google.com/o/oauth2/token [none]
+[debug] [2026-10-18T16:37:24.479Z] >>> [apiv2][body] POST https://accounts.google.com/o/oauth2/token [omitted]
+[debug] [2026-10-18T16:37:35.287Z] *** [apiv2] error from fetch(https://accounts.google.com/o/oauth2/token, {"headers":{},"method":"POST","body":{"type":"Buffer","data":[45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,102,97,55,57,50,53,51,54,100,52,48,97,52,54,48,99,101,50,50,101,54,50,50,101,13,10,67,111,110,116,101,110,116,45,68,105,115,112,111,115,105,116,105,111,110,58,32,102,111,114,109,45,100,97,116,97,59,32,110,97,109,101,61,34,99,111,100,101,34,13,10,13,10,52,47,48,65,88,108,113,111,105,55,48,74,79,76,66,82,114,97,83,55,118,95,80,68,45,73,70,121,49,81,80,76,98,97,53,54,67,118,110,105,102,45,71,111,67,49,57,112,73,110,112,122,57,87,76,87,115,103,67,95,70,69,100,109,114,90,105,53,102,49,119,78,81,13,10,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,102,97,55,57,50,53,51,54,100,52,48,97,52,54,48,99,101,50,50,101,54,50,50,101,13,10,67,111,110,116,101,110,116,45,68,105,115,112,111,115,105,116,105,111,110,58,32,102,111,114,109,45,100,97,116,97,59,32,110,97,109,101,61,34,99,108,105,101,110,116,95,105,100,34,13,10,13,10,53,54,51,53,56,52,51,51,53,56,54,57,45,102,103,114,104,103,109,100,52,55,98,113,110,101,107,105,106,53,105,56,98,53,112,114,48,51,104,111,56,52,57,101,54,46,97,112,112,115,46,103,111,111,103,108,101,117,115,101,114,99,111,110,116,101,110,116,46,99,111,109,13,10,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,102,97,55,57,50,53,51,54,100,52,48,97,52,54,48,99,101,50,50,101,54,50,50,101,13,10,67,111,110,116,101,110,116,45,68,105,115,112,111,115,105,116,105,111,110,58,32,102,111,114,109,45,100,97,116,97,59,32,110,97,109,101,61,34,99,108,105,101,110,116,95,115,101,99,114,101,116,34,13,10,13,10,106,57,105,86,90,102,83,56,107,107,67,69,70,85,80,97,65,101,74,86,48,115,65,105,13,10,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,102,97,55,57,50,53,51,54,100,52,48,97,52,54,48,99,101,50,50,101,54,50,50,101,13,10,67,111,110,116,101,110,116,45,68,105,115,112,111,115,105,116,105,111,110,58,32,102,111,114,109,45,100,97,116,97,59,32,110,97,109,101,61,34,114,101,100,105,114,101,99,116,95,117,114,105,34,13,10,13,10,104,116,116,112,58,47,47,108,111,99,97,108,104,111,115,116,58,57,48,48,53,13,10,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,102,97,55,57,50,53,51,54,100,52,48,97,52,54,48,99,101,50,50,101,54,50,50,101,13,10,67,111,110,116,101,110,116,45,68,105,115,112,111,115,105,116,105,111,110,58,32,102,111,114,109,45,100,97,116,97,59,32,110,97,109,101,61,34,103,114,97,110,116,95,116,121,112,101,34,13,10,13,10,97,117,116,104,111,114,105,122,97,116,105,111,110,95,99,111,100,101,13,10,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,102,97,55,57,50,53,51,54,100,52,48,97,52,54,48,99,101,50,50,101,54,50,50,101,45,45,13,10]}}): ConnectTimeoutError: Connect Timeout Error (attempted address: accounts.google.com:443, timeout: 10000ms)
+[debug] [2026-10-18T16:37:35.289Z] Token Fetch Error: FirebaseError: Failed to make request to https://accounts.google.com/o/oauth2/token
+    at RetryOperation._fn (C:\Users\Administrator\AppData\Local\npm-cache\_npx\ba4f1959e38407b5\node_modules\firebase-tools\lib\apiv2.js:338:31)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+[error] Authentication Error: Your credentials are no longer valid. Please run firebase login --reauth
+
+For CI servers and headless environments, generate a new token with firebase login:ci
+[debug] [2026-10-18T16:37:35.301Z] >>> [apiv2][query] POST https://auth.firebase.tools/attest [none]
+[debug] [2026-10-18T16:37:35.301Z] >>> [apiv2][body] POST https://auth.firebase.tools/attest {"session_id":"d35f43c4-220b-4ca5-b405-05f2b5320b2c"}
+[debug] [2026-10-18T16:37:36.895Z] <<< [apiv2][status] POST https://auth.firebase.tools/attest 200
+[debug] [2026-10-18T16:37:36.896Z] <<< [apiv2][body] POST https://auth.firebase.tools/attest {"token":"E3bqk-BADDswJj71u01b7gWnmUP5GrkHougWNpRu05E"}
+[info] 
+[info] To sign in to the Firebase CLI:
+[info] 
+[info] 1. Take note of your session ID:
+[info] 
+[info]    D35F4
+[info] 
+[info] 2. Visit the URL below on any device and follow the instructions to get your code:
+[info] 
+[info]    https://auth.firebase.tools/login?code_challenge=GVgfI2KPNjjjJ1GhJRUqUSAZLkfzzQKRhNRtwip46WQ&session=d35f43c4-220b-4ca5-b405-05f2b5320b2c&attest=E3bqk-BADDswJj71u01b7gWnmUP5GrkHougWNpRu05E
+[info] 
+[info] 3. Paste or enter the authorization code below once you have it:
+[info] 

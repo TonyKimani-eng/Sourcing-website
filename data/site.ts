@@ -29,7 +29,7 @@ export const siteContent = {
     { label: "By Air", value: "7-10 days" },
     { label: "By Ship", value: "35-40 days" },
     { label: "Air Freight", value: "13 USD per kg" },
-    { label: "Sea Freight", value: "58k KES per CBM" },
+    { label: "Sea Freight", value: "72k KES per CBM" },
     { label: "Sourcing Fee", value: "5k KES" }
   ],
   highlights: [
@@ -422,7 +422,7 @@ export const siteContent = {
     },
     {
       title: "Sea Freight",
-      price: "58k KES",
+      price: "70k KES",
       unit: "per CBM",
       description: "Ideal for furniture, wholesale stock, machines, and larger shipments."
     },

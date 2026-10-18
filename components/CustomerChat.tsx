@@ -3,6 +3,7 @@
 import { FormEvent, useEffect, useRef, useState } from "react";
 import {
   ChatMessage,
+  getChatErrorMessage,
   sendVisitorMessage,
   subscribeToPublicChatMessages
 } from "@/lib/chat";
@@ -18,6 +19,7 @@ export function CustomerChat() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [message, setMessage] = useState("");
   const [sendState, setSendState] = useState<"idle" | "sending" | "error">("idle");
+  const [errorMessage, setErrorMessage] = useState("");
   const [hasStarted, setHasStarted] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
 
@@ -50,11 +52,23 @@ export function CustomerChat() {
       (nextMessages) => {
         if (isActive) setMessages(nextMessages);
       },
-      () => setSendState("error")
-    ).then((nextUnsubscribe) => {
-      if (isActive) unsubscribe = nextUnsubscribe;
-      else nextUnsubscribe();
-    });
+      (error) => {
+        console.error("Could not listen to website chat", error);
+        setErrorMessage(getChatErrorMessage(error));
+        setSendState("error");
+      }
+    )
+      .then((nextUnsubscribe) => {
+        if (isActive) unsubscribe = nextUnsubscribe;
+        else nextUnsubscribe();
+      })
+      .catch((error: unknown) => {
+        console.error("Could not open website chat", error);
+        if (isActive) {
+          setErrorMessage(getChatErrorMessage(error));
+          setSendState("error");
+        }
+      });
 
     return () => {
       isActive = false;
@@ -71,6 +85,7 @@ export function CustomerChat() {
     if (!message.trim() || !visitorName.trim() || !visitorContact.trim()) return;
 
     setSendState("sending");
+    setErrorMessage("");
     try {
       await sendVisitorMessage({ visitorName, visitorContact, text: message });
       window.localStorage.setItem(
@@ -80,7 +95,9 @@ export function CustomerChat() {
       setHasStarted(true);
       setMessage("");
       setSendState("idle");
-    } catch {
+    } catch (error) {
+      console.error("Could not send website chat message", error);
+      setErrorMessage(getChatErrorMessage(error));
       setSendState("error");
     }
   };
@@ -173,10 +190,10 @@ export function CustomerChat() {
               </button>
             </div>
             {sendState === "error" ? (
-              <p className="text-xs font-bold text-ember-600">Message not sent. Please try again.</p>
+              <p className="text-xs font-bold text-ember-600">{errorMessage || "Message not sent. Please try again."}</p>
             ) : null}
             <p className="text-[10px] font-semibold text-slate-400">
-              Your conversation stays on this website. Teekay receives a WhatsApp alert for new messages.
+              Our team will reply here as soon as possible.
             </p>
           </form>
         </section>

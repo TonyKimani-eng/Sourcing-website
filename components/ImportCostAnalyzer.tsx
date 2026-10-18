@@ -5,7 +5,7 @@ import { PurchaseLink } from "@/components/Auth";
 import { Container } from "@/components/Container";
 
 const airUsdPerKg = 13;
-const seaKesPerCbm = 58000;
+const seaKesPerCbm = 70000;
 const sourcingFeeKes = 5000;
 
 function formatKes(value: number) {
@@ -98,7 +98,7 @@ export function ImportCostAnalyzer() {
               </div>
               <div className="rounded-lg border border-slate-200 bg-[#f8fbff] p-4">
                 <span className="block text-xs font-black uppercase text-teal-600">Sea</span>
-                <span className="mt-1 block text-lg font-black text-navy-950">58k KES/CBM</span>
+                <span className="mt-1 block text-lg font-black text-navy-950">70k KES/CBM</span>
               </div>
               <div className="rounded-lg border border-slate-200 bg-[#f8fbff] p-4">
                 <span className="block text-xs font-black uppercase text-teal-600">Sourcing</span>

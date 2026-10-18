@@ -43,7 +43,15 @@ NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=
 
 For GitHub Pages deployment, add the same keys as repository secrets.
 
-Deploy the database rules with `firebase deploy --only firestore:rules`.
+Enable **Phone** and **Anonymous** sign-in providers in Firebase Authentication. Public website chat uses anonymous sign-in, even when customers have phone accounts.
+
+Enable Firebase Storage, then deploy both Firestore and Storage rules with:
+
+```bash
+firebase deploy --only firestore:rules,storage
+```
+
+Reference photos must be images no larger than 5 MB each. If chat reports `auth/operation-not-allowed`, enable Anonymous sign-in. If photo uploads report `storage/unauthorized`, confirm the signed-in account and deployed Storage rules belong to the Firebase project configured in `.env.local`.
 
 ## WhatsApp alerts for website chat
 

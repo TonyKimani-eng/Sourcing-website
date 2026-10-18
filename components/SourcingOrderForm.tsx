@@ -10,6 +10,7 @@ const maxPhotoCount = 4;
 const sourcingFeeKes = 5000;
 const manualPaymentName = siteContent.brand.paymentName;
 const manualPaymentPhone = siteContent.brand.phone;
+const maxPhotoSizeBytes = 5 * 1024 * 1024;
 
 type SourcingStep = "details" | "payment" | "submitted";
 
@@ -138,8 +139,19 @@ export function SourcingOrderForm() {
     setSubmitState("submitting");
     setMessage("");
 
+    let uploadingPhotos = photos.length > 0;
     try {
+      for (const photo of photos) {
+        if (photo.size > maxPhotoSizeBytes) {
+          throw new Error("Each reference photo must be 5 MB or smaller.");
+        }
+        if (!photo.type.startsWith("image/")) {
+          throw new Error("Reference photos must be image files.");
+        }
+      }
+
       const photoUrls = photos.length ? await uploadInquiryPhotos(user.uid, photos) : [];
+      uploadingPhotos = false;
 
       await saveInquiry(
         {
@@ -174,11 +186,26 @@ export function SourcingOrderForm() {
     } catch (error) {
       console.error("Could not submit sourcing order", error);
       setSubmitState("error");
-      setMessage(
-        photos.length
-          ? "Could not submit photos. Confirm Firebase Storage is enabled, or submit without photos."
-          : "Could not submit sourcing order. Please try again."
-      );
+      const code =
+        typeof error === "object" && error !== null && "code" in error
+          ? String(error.code)
+          : "";
+      const detail = error instanceof Error ? error.message : "";
+      if (detail === "Each reference photo must be 5 MB or smaller." || detail === "Reference photos must be image files.") {
+        setMessage(detail);
+      } else if (uploadingPhotos && code === "storage/unauthorized") {
+        setMessage("Photo upload was denied. Deploy storage.rules and confirm you are signed in to the correct Firebase project.");
+      } else if (uploadingPhotos && (code === "storage/bucket-not-found" || code === "storage/no-default-bucket")) {
+        setMessage("Firebase Storage is not available for this project. Create or enable its Storage bucket and check the bucket setting.");
+      } else if (uploadingPhotos && code) {
+        setMessage(`Photo upload failed (${code}). Confirm Firebase Storage is enabled and storage.rules are deployed.`);
+      } else if (uploadingPhotos) {
+        setMessage(detail || "Photo upload failed. Confirm Firebase Storage is enabled and storage.rules are deployed.");
+      } else if (code === "permission-denied" || code === "firestore/permission-denied") {
+        setMessage("The sourcing request was blocked by Firestore rules. Deploy the latest firestore.rules file.");
+      } else {
+        setMessage("Could not submit sourcing order. Please try again.");
+      }
     }
   };
 

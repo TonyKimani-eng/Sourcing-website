@@ -13,6 +13,28 @@ import {
 } from "firebase/firestore";
 import { db, firebaseConfig, isFirebaseConfigured } from "@/lib/firebase";
 
+export function getChatErrorMessage(error: unknown) {
+  const code =
+    typeof error === "object" && error !== null && "code" in error
+      ? String(error.code)
+      : "";
+
+  if (code === "auth/operation-not-allowed") {
+    return "Website chat is unavailable because Anonymous sign-in is disabled in Firebase Authentication.";
+  }
+  if (code === "permission-denied" || code === "firestore/permission-denied") {
+    return "Website chat is blocked by Firestore rules. Deploy the latest firestore.rules file.";
+  }
+  if (code === "auth/network-request-failed" || code === "unavailable" || code === "firestore/unavailable") {
+    return "Could not connect to website chat. Check your connection and try again.";
+  }
+  if (code) {
+    return `Website chat failed (${code}). Check Firebase Authentication and Firestore configuration.`;
+  }
+
+  return "Website chat could not connect. Check Firebase Authentication and Firestore configuration.";
+}
+
 export type ChatMessage = {
   id: string;
   sender: "visitor" | "admin";
@@ -98,7 +120,7 @@ export async function sendVisitorMessage(input: {
 
 export async function subscribeToPublicChatMessages(
   onChange: (messages: ChatMessage[]) => void,
-  onError: () => void
+  onError: (error: unknown) => void
 ) {
   const { chatId, firestore } = await startOrResumePublicChat();
   const unsubscribe = onSnapshot(

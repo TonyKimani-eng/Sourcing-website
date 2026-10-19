@@ -8,8 +8,8 @@ import {
   getFirestore,
   onSnapshot,
   serverTimestamp,
-  setDoc,
-  updateDoc
+  updateDoc,
+  writeBatch
 } from "firebase/firestore";
 import { db, firebaseConfig, isFirebaseConfigured } from "@/lib/firebase";
 
@@ -93,7 +93,8 @@ export async function sendVisitorMessage(input: {
   const { chatId, firestore } = await startOrResumePublicChat();
   const cleanText = input.text.trim().slice(0, 1000);
 
-  await setDoc(
+  const batch = writeBatch(firestore);
+  batch.set(
     doc(firestore, "chats", chatId),
     {
       visitorUid: chatId,
@@ -108,12 +109,12 @@ export async function sendVisitorMessage(input: {
     },
     { merge: true }
   );
-
-  await addDoc(collection(firestore, "chats", chatId, "messages"), {
+  batch.set(doc(collection(firestore, "chats", chatId, "messages")), {
     sender: "visitor",
     text: cleanText,
     createdAt: serverTimestamp()
   });
+  await batch.commit();
 
   return chatId;
 }

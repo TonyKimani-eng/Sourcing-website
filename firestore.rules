@@ -11,10 +11,66 @@ service cloud.firestore {
       return request.auth != null;
     }
 
+    function validInquiry(data) {
+      return data.keys().hasAll([
+          "requestType", "productName", "productCategory", "userId",
+          "customerName", "customerPhone", "customerEmail", "status",
+          "createdAt", "updatedAt"
+        ])
+        && data.keys().hasOnly([
+          "requestType", "productName", "productCategory", "description",
+          "contactMethod", "photoUrls", "storage", "color", "priceEstimate",
+          "quantity", "paymentMethod", "paymentStatus", "paymentNote",
+          "paymentCode", "orderItems", "userId", "customerName",
+          "customerPhone", "customerEmail", "status", "createdAt", "updatedAt"
+        ])
+        && data.requestType in ["product", "sourcing"]
+        && data.productName is string
+        && data.productName.size() > 0
+        && data.productName.size() <= 160
+        && data.productCategory is string
+        && data.productCategory.size() > 0
+        && data.productCategory.size() <= 100
+        && data.customerName is string
+        && data.customerName.size() > 0
+        && data.customerName.size() <= 100
+        && data.customerPhone is string
+        && data.customerPhone.size() <= 40
+        && data.customerEmail is string
+        && data.customerEmail.size() <= 254
+        && (!data.keys().hasAny(["description"])
+          || (data.description is string && data.description.size() <= 2000))
+        && (!data.keys().hasAny(["contactMethod"])
+          || (data.contactMethod is string && data.contactMethod.size() <= 160))
+        && (!data.keys().hasAny(["photoUrls"])
+          || (data.photoUrls is list && data.photoUrls.size() <= 4))
+        && (!data.keys().hasAny(["storage"])
+          || (data.storage is string && data.storage.size() <= 80))
+        && (!data.keys().hasAny(["color"])
+          || (data.color is string && data.color.size() <= 80))
+        && (!data.keys().hasAny(["priceEstimate"])
+          || (data.priceEstimate is number && data.priceEstimate >= 0))
+        && (!data.keys().hasAny(["quantity"])
+          || (data.quantity is int && data.quantity > 0 && data.quantity <= 100))
+        && (!data.keys().hasAny(["paymentCode"])
+          || (data.paymentCode is string && data.paymentCode.size() <= 80))
+        && (!data.keys().hasAny(["paymentMethod"])
+          || (data.paymentMethod is string && data.paymentMethod.size() <= 80))
+        && (!data.keys().hasAny(["paymentStatus"])
+          || (data.paymentStatus is string && data.paymentStatus.size() <= 120))
+        && (!data.keys().hasAny(["paymentNote"])
+          || (data.paymentNote is string && data.paymentNote.size() <= 500))
+        && (!data.keys().hasAny(["orderItems"])
+          || (data.orderItems is list && data.orderItems.size() <= 20))
+        && data.status == "New";
+    }
+
     match /inquiries/{inquiryId} {
-      allow create: if request.auth != null
+      allow create: if isSignedIn()
         && request.resource.data.userId == request.auth.uid
-        && request.resource.data.status == "New";
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.updatedAt == request.time
+        && validInquiry(request.resource.data);
 
       allow read: if isAdmin()
         || (request.auth != null

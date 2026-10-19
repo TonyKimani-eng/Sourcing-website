@@ -435,14 +435,9 @@ export const siteContent = {
   ],
   warehouses: [
     {
-      title: "By Sea Warehouse",
-      contact: "Wei Mr. (Owen) 18565545390",
-      address: "佛山市里水镇洲村大管家仓储园K126 仓"
-    },
-    {
-      title: "By Air Warehouse",
-      contact: "Lisa 15913003394",
-      address: "广州市越秀区童心路6号B262房号"
+      title: "Guangzhou Air/Sea Warehouse",
+      contact: "Air: Lisa 15913003394 | Sea: Wei Mr. (Owen) 18565545390",
+      address: "广东省佛山市南海区里水镇草场，海南州工业区32号F区124仓-126仓"
     }
   ],
   kenyaPickup: {

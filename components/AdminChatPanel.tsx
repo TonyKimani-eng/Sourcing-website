@@ -43,6 +43,7 @@ export function AdminChatPanel() {
   };
 
   const activeThread = threads.find((thread) => thread.id === activeId);
+  const unreadCount = threads.reduce((sum, thread) => sum + thread.unreadByAdmin, 0);
 
   return (
     <section className="mt-10">
@@ -51,9 +52,18 @@ export function AdminChatPanel() {
           <p className="text-sm font-black uppercase text-teal-600">Website chat</p>
           <h2 className="mt-1 text-2xl font-black text-navy-950">Customer conversations</h2>
         </div>
-        <span className="rounded-full bg-ember-500 px-3 py-1 text-xs font-black text-white">
-          {threads.reduce((sum, thread) => sum + thread.unreadByAdmin, 0)} unread
-        </span>
+        <div
+          role={unreadCount ? "alert" : "status"}
+          aria-live="polite"
+          className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-black ${
+            unreadCount
+              ? "animate-pulse border-2 border-red-500 bg-red-600 text-white shadow-lg shadow-red-200"
+              : "border border-teal-200 bg-teal-50 text-teal-800"
+          }`}
+        >
+          <span aria-hidden="true" className={`h-3 w-3 rounded-full ${unreadCount ? "bg-white" : "bg-teal-500"}`} />
+          {unreadCount ? `${unreadCount} new message${unreadCount === 1 ? "" : "s"} need${unreadCount === 1 ? "s" : ""} your reply` : "All chats caught up"}
+        </div>
       </div>
 
       <div className="grid min-h-[430px] overflow-hidden rounded-lg border border-slate-200 bg-white shadow-soft lg:grid-cols-[280px_1fr]">
@@ -73,8 +83,9 @@ export function AdminChatPanel() {
               <div className="flex items-center justify-between gap-2">
                 <span className="truncate text-sm font-black text-navy-950">{thread.visitorName}</span>
                 {thread.unreadByAdmin ? (
-                  <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-ember-500 px-1 text-[10px] font-black text-white">
-                    {thread.unreadByAdmin}
+                  <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-red-600 px-2 py-1 text-[10px] font-black uppercase tracking-wide text-white ring-2 ring-red-100">
+                    <span aria-hidden="true" className="h-1.5 w-1.5 animate-ping rounded-full bg-white" />
+                    New
                   </span>
                 ) : null}
               </div>

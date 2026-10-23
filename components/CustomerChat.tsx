@@ -9,10 +9,12 @@ import {
 } from "@/lib/chat";
 import { isFirebaseConfigured } from "@/lib/firebase";
 import { siteContent } from "@/data/site";
+import { useAuth } from "@/components/Auth";
 
 const profileStorageKey = "teekay-chat-profile";
 
 export function CustomerChat() {
+  const { user } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [visitorName, setVisitorName] = useState("");
   const [visitorContact, setVisitorContact] = useState("");
@@ -22,6 +24,13 @@ export function CustomerChat() {
   const [errorMessage, setErrorMessage] = useState("");
   const [hasStarted, setHasStarted] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!user) return;
+    setVisitorName(user.name || "Customer");
+    setVisitorContact(user.phone || user.email || "Signed-in customer");
+    setHasStarted(true);
+  }, [user]);
 
   useEffect(() => {
     const savedProfile = window.localStorage.getItem(profileStorageKey);

@@ -96,7 +96,7 @@ service cloud.firestore {
       allow create: if isSignedIn()
         && testimonialId == request.resource.data.inquiryId
         && request.resource.data.userId == request.auth.uid
-        && request.resource.data.published == false
+        && request.resource.data.published == true
         && request.resource.data.rating is int
         && request.resource.data.rating >= 1
         && request.resource.data.rating <= 5
@@ -109,9 +109,15 @@ service cloud.firestore {
         && request.resource.data.orderLabel is string
         && request.resource.data.orderLabel.size() > 0
         && request.resource.data.orderLabel.size() <= 80
+        && ((!('photoUrl' in request.resource.data) && !('photoPath' in request.resource.data))
+          || (request.resource.data.photoUrl is string
+          && request.resource.data.photoUrl.size() > 0
+          && request.resource.data.photoUrl.size() <= 2048
+          && request.resource.data.photoPath is string
+          && request.resource.data.photoPath.matches('testimonial-photos/' + request.auth.uid + '/' + testimonialId + '/[^/]+')))
         && request.resource.data.keys().hasOnly([
           "inquiryId", "userId", "reviewerName", "rating", "message",
-          "orderLabel", "published", "createdAt", "updatedAt"
+          "orderLabel", "published", "createdAt", "updatedAt", "photoUrl", "photoPath"
         ])
         && get(/databases/$(database)/documents/inquiries/$(testimonialId)).data.userId == request.auth.uid
         && get(/databases/$(database)/documents/inquiries/$(testimonialId)).data.status == "Received";

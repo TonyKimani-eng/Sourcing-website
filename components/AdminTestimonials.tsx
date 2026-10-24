@@ -26,7 +26,7 @@ export function AdminTestimonials() {
     <section className="mt-10">
       <div className="mb-4">
         <p className="text-sm font-black uppercase text-teal-600">Verified reviews</p>
-        <h2 className="mt-1 text-2xl font-black text-navy-950">Testimonial approval</h2>
+        <h2 className="mt-1 text-2xl font-black text-navy-950">Testimonial management</h2>
       </div>
       {!testimonials.length ? (
         <div className="rounded-lg border border-slate-200 bg-white p-5 text-sm font-bold text-slate-500 shadow-soft">
@@ -44,17 +44,25 @@ export function AdminTestimonials() {
                   </p>
                 </div>
                 <span className={`rounded-full px-3 py-1 text-[10px] font-black uppercase ${testimonial.published ? "bg-teal-500/10 text-teal-700" : "bg-gold-400/20 text-navy-950"}`}>
-                  {testimonial.published ? "Published" : "Pending"}
+                  {testimonial.published ? "Published" : "Hidden"}
                 </span>
               </div>
               <p className="mt-3 text-sm font-semibold leading-6 text-slate-600">“{testimonial.message}”</p>
+              {testimonial.photoUrl ? (
+                <img
+                  src={testimonial.photoUrl}
+                  alt={`Photo shared by ${testimonial.reviewerName}`}
+                  loading="lazy"
+                  className="mt-3 max-h-56 w-full rounded-md border border-slate-200 object-cover"
+                />
+              ) : null}
               <button
                 type="button"
                 onClick={() => void togglePublished(testimonial)}
                 disabled={savingId === testimonial.id}
                 className="mt-4 inline-flex min-h-9 items-center justify-center rounded-full bg-navy-950 px-4 text-xs font-black text-white hover:bg-teal-600 disabled:opacity-60"
               >
-                {savingId === testimonial.id ? "Saving..." : testimonial.published ? "Hide review" : "Approve & publish"}
+                {savingId === testimonial.id ? "Saving..." : testimonial.published ? "Hide review" : "Publish review"}
               </button>
             </article>
           ))}

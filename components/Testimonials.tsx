@@ -63,6 +63,14 @@ export function Testimonials() {
               <p className="mt-4 text-sm font-semibold leading-6 text-navy-950">
                 “{testimonial.message}”
               </p>
+              {testimonial.photoUrl ? (
+                <img
+                  src={testimonial.photoUrl}
+                  alt={`Photo shared by ${testimonial.reviewerName}`}
+                  loading="lazy"
+                  className="mt-4 max-h-64 w-full rounded-lg border border-slate-200 object-cover"
+                />
+              ) : null}
               <div className="mt-5 flex items-end justify-between gap-3 border-t border-slate-200 pt-4">
                 <div>
                   <p className="text-sm font-black text-navy-950">{testimonial.reviewerName}</p>

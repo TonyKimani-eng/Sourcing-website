@@ -19,5 +19,23 @@ service firebase.storage {
         && request.resource.size <= 5 * 1024 * 1024
         && request.resource.contentType.matches('image/.*');
     }
+
+    match /testimonial-photos/{userId}/{testimonialId}/{fileName} {
+      function publishedPhoto() {
+        return firestore.exists(/databases/(default)/documents/testimonials/$(testimonialId))
+          && firestore.get(/databases/(default)/documents/testimonials/$(testimonialId)).data.published == true
+          && firestore.get(/databases/(default)/documents/testimonials/$(testimonialId)).data.photoPath
+            == 'testimonial-photos/' + userId + '/' + testimonialId + '/' + fileName;
+      }
+
+      allow read: if isAdmin()
+        || (request.auth != null && request.auth.uid == userId)
+        || publishedPhoto();
+      allow write: if isSignedIn()
+        && request.auth.uid == userId
+        && request.resource != null
+        && request.resource.size <= 5 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*');
+    }
   }
 }

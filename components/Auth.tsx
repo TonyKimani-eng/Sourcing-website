@@ -31,6 +31,8 @@ import {
 } from "@/lib/inquiries";
 import {
   saveTestimonial,
+  uploadTestimonialPhoto,
+  removeTestimonialPhoto,
   subscribeToUserTestimonials,
   Testimonial
 } from "@/lib/testimonials";
@@ -1092,7 +1094,7 @@ function CustomerOrders({ user }: { user: User }) {
           {order.status === "Received" ? (
             testimonials.some((testimonial) => testimonial.inquiryId === order.id) ? (
               <p className="mt-1 rounded-md bg-teal-500/10 px-3 py-2 text-xs font-bold text-teal-700">
-                Review submitted{testimonials.find((item) => item.inquiryId === order.id)?.published ? " and published." : " for approval."}
+                Review submitted{testimonials.find((item) => item.inquiryId === order.id)?.published ? " and published." : "; it is not currently public."}
               </p>
             ) : (
               <ReviewForm order={order} user={user} />
@@ -1108,27 +1110,47 @@ function CustomerOrders({ user }: { user: User }) {
 function ReviewForm({ order, user }: { order: SavedInquiry; user: User }) {
   const [rating, setRating] = useState(5);
   const [message, setMessage] = useState("");
+  const [photo, setPhoto] = useState<File | null>(null);
+  const [photoPreview, setPhotoPreview] = useState("");
+  const [submitError, setSubmitError] = useState("");
   const [submitState, setSubmitState] = useState<"idle" | "saving" | "saved" | "error">("idle");
+
+  useEffect(() => {
+    if (!photo) {
+      setPhotoPreview("");
+      return undefined;
+    }
+    const previewUrl = URL.createObjectURL(photo);
+    setPhotoPreview(previewUrl);
+    return () => URL.revokeObjectURL(previewUrl);
+  }, [photo]);
 
   const submitReview = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (message.trim().length < 10) {
+      setSubmitError("Please write at least 10 characters.");
       setSubmitState("error");
       return;
     }
 
     setSubmitState("saving");
+    setSubmitError("");
+    let uploadedPhoto: { photoPath: string; photoUrl: string } | undefined;
     try {
+      if (photo) uploadedPhoto = await uploadTestimonialPhoto(user.uid, order.id, photo);
       await saveTestimonial({
         inquiryId: order.id,
         userId: user.uid,
         reviewerName: user.name,
         rating,
         message,
-        orderLabel: order.requestType === "sourcing" ? "Sourcing & delivery" : "China to Kenya delivery"
+        orderLabel: order.requestType === "sourcing" ? "Sourcing & delivery" : "China to Kenya delivery",
+        ...uploadedPhoto
       });
       setSubmitState("saved");
-    } catch {
+    } catch (error) {
+      if (uploadedPhoto) await removeTestimonialPhoto(uploadedPhoto.photoPath);
+      setSubmitError(error instanceof Error ? error.message : "Could not submit your review. Please try again.");
       setSubmitState("error");
     }
   };
@@ -1136,7 +1158,7 @@ function ReviewForm({ order, user }: { order: SavedInquiry; user: User }) {
   if (submitState === "saved") {
     return (
       <p className="mt-1 rounded-md bg-teal-500/10 px-3 py-2 text-xs font-bold text-teal-700">
-        Thank you. Your verified review is awaiting approval.
+        Thank you. Your verified review is now published.
       </p>
     );
   }
@@ -1169,6 +1191,30 @@ function ReviewForm({ order, user }: { order: SavedInquiry; user: User }) {
         placeholder="How did your goods arrive?"
         className="resize-none rounded-md border border-slate-200 px-3 py-2 text-xs font-semibold leading-5 outline-none focus:border-teal-500"
       />
+      <label className="grid gap-1 text-xs font-black text-navy-950">
+        Add a photo (optional, up to 5 MB)
+        <input
+          type="file"
+          accept="image/*"
+          onChange={(event) => {
+            const selected = event.target.files?.[0] ?? null;
+            setPhoto(selected);
+            if (selected && selected.size > 5 * 1024 * 1024) {
+              setSubmitError("Choose an image smaller than 5 MB.");
+              setSubmitState("error");
+              setPhoto(null);
+              event.target.value = "";
+            } else {
+              setSubmitError("");
+              setSubmitState("idle");
+            }
+          }}
+          className="min-h-9 rounded-md border border-slate-200 p-2 text-xs font-semibold"
+        />
+      </label>
+      {photoPreview ? (
+        <img src={photoPreview} alt="Review photo preview" className="max-h-40 w-fit rounded-md border border-slate-200 object-cover" />
+      ) : null}
       <button
         type="submit"
         disabled={submitState === "saving"}
@@ -1177,7 +1223,7 @@ function ReviewForm({ order, user }: { order: SavedInquiry; user: User }) {
         {submitState === "saving" ? "Submitting..." : "Submit verified review"}
       </button>
       {submitState === "error" ? (
-        <p className="text-xs font-bold text-ember-600">Use at least 10 characters and try again.</p>
+        <p className="text-xs font-bold text-ember-600">{submitError || "Could not submit your review. Please try again."}</p>
       ) : null}
     </form>
   );

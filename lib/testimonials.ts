@@ -8,7 +8,8 @@ import {
   updateDoc,
   where
 } from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import { deleteObject, getDownloadURL, ref, uploadBytes } from "firebase/storage";
+import { db, storage } from "@/lib/firebase";
 
 export type Testimonial = {
   id: string;
@@ -18,6 +19,8 @@ export type Testimonial = {
   rating: number;
   message: string;
   orderLabel: string;
+  photoUrl: string;
+  photoPath: string;
   published: boolean;
   createdAtText: string;
   createdAtMs: number;
@@ -42,6 +45,8 @@ function mapTestimonial(id: string, data: Record<string, unknown>): Testimonial 
     rating: Number(data.rating ?? 5),
     message: String(data.message ?? ""),
     orderLabel: String(data.orderLabel ?? "Delivered order"),
+    photoUrl: String(data.photoUrl ?? ""),
+    photoPath: String(data.photoPath ?? ""),
     published: data.published === true,
     createdAtText: new Date(createdAtMs).toLocaleDateString("en-KE", {
       month: "short",
@@ -97,6 +102,8 @@ export async function saveTestimonial(input: {
   rating: number;
   message: string;
   orderLabel: string;
+  photoUrl?: string;
+  photoPath?: string;
 }) {
   if (!db) {
     throw new Error("Firestore is not configured.");
@@ -107,10 +114,31 @@ export async function saveTestimonial(input: {
     rating: Math.min(5, Math.max(1, Math.round(input.rating))),
     message: input.message.trim(),
     reviewerName: input.reviewerName.trim().slice(0, 80),
-    published: false,
+    published: true,
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp()
   });
+}
+
+export async function uploadTestimonialPhoto(userId: string, inquiryId: string, file: File) {
+  if (!storage) throw new Error("Firebase Storage is not configured.");
+  if (!file.type.startsWith("image/")) throw new Error("Choose an image file.");
+  if (file.size > 5 * 1024 * 1024) throw new Error("Choose an image smaller than 5 MB.");
+
+  const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "-").slice(-100) || "review-image";
+  const photoPath = `testimonial-photos/${userId}/${inquiryId}/${Date.now()}-${safeName}`;
+  const photoRef = ref(storage, photoPath);
+  await uploadBytes(photoRef, file, { contentType: file.type });
+  try {
+    return { photoPath, photoUrl: await getDownloadURL(photoRef) };
+  } catch (error) {
+    await deleteObject(photoRef).catch(() => undefined);
+    throw error;
+  }
+}
+
+export async function removeTestimonialPhoto(photoPath: string) {
+  if (storage && photoPath) await deleteObject(ref(storage, photoPath)).catch(() => undefined);
 }
 
 export function subscribeToAdminTestimonials(

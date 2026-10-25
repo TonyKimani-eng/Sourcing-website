@@ -54,6 +54,8 @@ export function ImportCostAnalyzer() {
   const [method, setMethod] = useState<"air" | "sea">("air");
   const [weightKg, setWeightKg] = useState(12);
   const [volumeCbm, setVolumeCbm] = useState(0.35);
+  const [showDimensions, setShowDimensions] = useState(false);
+  const [dimensions, setDimensions] = useState({ width: 0, length: 0, height: 0 });
   const [productCost, setProductCost] = useState(85000);
   const [quantity, setQuantity] = useState(20);
   const [sellPrice, setSellPrice] = useState(6500);
@@ -77,6 +79,8 @@ export function ImportCostAnalyzer() {
       margin
     };
   }, [method, weightKg, volumeCbm, productCost, quantity, sellPrice, usdRate]);
+
+  const calculatedCbm = (dimensions.width * dimensions.length * dimensions.height) / 1_000_000;
 
   return (
     <section id="cost-analyzer" className="bg-white py-16 sm:py-24">
@@ -134,7 +138,17 @@ export function ImportCostAnalyzer() {
                   <Field label="USD rate" value={usdRate} onChange={setUsdRate} suffix="KES" min={1} />
                 </>
               ) : (
-                <Field label="Cargo volume" value={volumeCbm} onChange={setVolumeCbm} suffix="CBM" />
+                <div>
+                  <Field label="Cargo volume" value={volumeCbm} onChange={setVolumeCbm} suffix="CBM" />
+                  <button
+                    type="button"
+                    onClick={() => setShowDimensions(true)}
+                    className="mt-2 text-sm font-bold text-teal-700 underline decoration-teal-300 underline-offset-2 hover:text-navy-950"
+                    aria-haspopup="dialog"
+                  >
+                    Don&apos;t know the CBM? Calculate it
+                  </button>
+                </div>
               )}
               <Field label="Expected selling price" value={sellPrice} onChange={setSellPrice} suffix="KES" />
             </div>
@@ -174,6 +188,72 @@ export function ImportCostAnalyzer() {
           </div>
         </div>
       </Container>
+
+      {showDimensions ? (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-navy-950/50 p-4"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) setShowDimensions(false);
+          }}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="cbm-calculator-title"
+            className="w-full max-w-sm rounded-xl bg-white p-5 shadow-2xl"
+          >
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <h3 id="cbm-calculator-title" className="text-lg font-black text-navy-950">
+                  Calculate cargo volume
+                </h3>
+                <p className="mt-1 text-sm text-slate-600">Enter the package dimensions in centimeters.</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowDimensions(false)}
+                className="rounded-md px-2 py-1 text-lg font-bold text-slate-500 hover:bg-slate-100"
+                aria-label="Close CBM calculator"
+              >
+                ×
+              </button>
+            </div>
+            <div className="mt-5 grid grid-cols-3 gap-3">
+              {(["width", "length", "height"] as const).map((dimension) => (
+                <label key={dimension} className="grid gap-2">
+                  <span className="text-sm font-bold capitalize text-navy-950">{dimension}</span>
+                  <input
+                    type="number"
+                    min="0"
+                    step="any"
+                    value={dimensions[dimension] || ""}
+                    onChange={(event) =>
+                      setDimensions((current) => ({ ...current, [dimension]: Number(event.target.value) }))
+                    }
+                    className="min-w-0 rounded-lg border border-slate-200 px-3 py-3 text-base font-bold text-navy-950 outline-none focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10"
+                    aria-label={`${dimension} in centimeters`}
+                  />
+                </label>
+              ))}
+            </div>
+            <p className="mt-4 rounded-lg bg-[#f8fbff] p-3 text-sm text-slate-600">
+              Volume: <span className="font-black text-navy-950">{calculatedCbm.toFixed(4)} CBM</span>
+              <span className="mt-1 block text-xs">Width × length × height ÷ 1,000,000</span>
+            </p>
+            <button
+              type="button"
+              disabled={calculatedCbm <= 0}
+              onClick={() => {
+                setVolumeCbm(Number(calculatedCbm.toFixed(4)));
+                setShowDimensions(false);
+              }}
+              className="mt-4 min-h-11 w-full rounded-full bg-ember-500 px-5 text-sm font-black text-white transition hover:bg-navy-950 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              Use this CBM
+            </button>
+          </div>
+        </div>
+      ) : null}
     </section>
   );
 }

@@ -4,7 +4,9 @@ import Link from "next/link";
 import { AuthButtons, PurchaseLink } from "@/components/Auth";
 import { Container } from "@/components/Container";
 import { IphoneProductCard } from "@/components/IphoneProductCard";
+import { CatalogSection } from "@/components/CatalogSection";
 import { SourcingOrderForm } from "@/components/SourcingOrderForm";
+import { catalogSections } from "@/data/catalog";
 import { assetPath } from "@/data/paths";
 import { siteContent } from "@/data/site";
 import { CustomerChat } from "@/components/CustomerChat";
@@ -17,6 +19,12 @@ export const metadata: Metadata = {
 
 export default function ProductsPage() {
   const { brand, products } = siteContent;
+  const productLinks = [
+    { id: "iphones", label: "iPhones" },
+    ...catalogSections.map((section) => ({ id: section.id, label: section.title })),
+    { id: "t-shirts", label: "T-Shirts" },
+    { id: "caps", label: "Caps" }
+  ];
 
   return (
     <main className="min-h-screen bg-[#f8fbff] text-navy-950">
@@ -37,13 +45,13 @@ export default function ProductsPage() {
               </span>
             </Link>
             <nav className="hidden flex-1 items-center justify-center gap-2 lg:flex">
-              {products.categories.map((product) => (
+              {productLinks.map((product) => (
                 <a
-                  href={`#${product.title.toLowerCase().replaceAll(" ", "-")}`}
+                  href={`#${product.id}`}
                   className="inline-flex min-h-10 items-center rounded-full border border-white/12 px-4 text-sm font-black text-white/82 transition hover:border-gold-400 hover:text-gold-400"
-                  key={product.title}
+                  key={product.id}
                 >
-                  {product.title}
+                  {product.label}
                 </a>
               ))}
               <a
@@ -80,13 +88,13 @@ export default function ProductsPage() {
       <section className="border-b border-slate-200 bg-white py-4">
         <Container>
           <div className="flex gap-2 overflow-x-auto pb-1">
-              {products.categories.map((product) => (
+              {productLinks.map((product) => (
                 <a
-                  href={`#${product.title.toLowerCase().replaceAll(" ", "-")}`}
+                  href={`#${product.id}`}
                   className="inline-flex min-h-11 shrink-0 items-center rounded-full border border-slate-200 bg-[#f8fbff] px-5 text-sm font-black text-navy-950 transition hover:border-ember-500 hover:bg-ember-500 hover:text-white"
-                  key={product.title}
+                  key={product.id}
                 >
-                  {product.title}
+                  {product.label}
                 </a>
               ))}
               <a
@@ -107,6 +115,9 @@ export default function ProductsPage() {
               <h2 className="mt-1 text-2xl font-black text-navy-950 sm:text-3xl">
                 Factory refurbished iPhones, 100% battery
               </h2>
+              <p className="mt-3 max-w-3xl text-sm font-bold leading-6 text-slate-600">
+                Every listed price is calculated from the supplier RMB price at KSh 20 per RMB, plus KSh 5,000 shipping and a lean retail margin.
+              </p>
             </div>
           </div>
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5">
@@ -117,6 +128,10 @@ export default function ProductsPage() {
         </Container>
       </section>
 
+      {catalogSections.map((section) => (
+        <CatalogSection section={section} key={section.id} />
+      ))}
+
       <section className="bg-white py-10 sm:py-14">
         <Container>
           <div className="mb-7 border-l-4 border-teal-500 pl-4">
@@ -126,7 +141,7 @@ export default function ProductsPage() {
             </h2>
           </div>
           <div className="grid gap-5 md:grid-cols-3">
-            {products.categories.slice(1).map((product) => (
+            {products.categories.filter((product) => product.title !== "iPhones" && product.title !== "Watches").map((product) => (
               <article
                 id={product.title.toLowerCase().replaceAll(" ", "-")}
                 className="relative scroll-mt-24 overflow-hidden rounded-lg border border-slate-100 bg-[#fbfdff] p-6 shadow-soft transition hover:-translate-y-1 hover:border-teal-500/30"

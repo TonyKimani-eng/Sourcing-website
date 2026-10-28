@@ -47,7 +47,7 @@ export const catalogSections: CatalogSection[] = [
     id: "samsung",
     title: "Samsung Galaxy",
     eyebrow: "Refurbished Android phones",
-    description: "Galaxy S, Fold, Flip, Note and A-series stock, priced in Kenya shillings.",
+    description: "Galaxy S, Fold, Flip, Note and A-series stock.",
     kind: "phone",
     products: [
       { name: "Galaxy S26 Ultra", variants: variants(["256GB", 5500], ["512GB", 6400]) },
@@ -171,7 +171,7 @@ export const catalogSections: CatalogSection[] = [
     id: "watches",
     title: "Apple, Samsung & Huawei Watches",
     eyebrow: "Smart watches",
-    description: "Popular smart-watch sizes and generations. Watch prices are converted to KSh with a modest product margin; phone shipping does not apply.",
+    description: "Popular smart-watch sizes and generations.",
     kind: "watch",
     products: [
       { name: "Apple Watch Ultra 3 (2025)", variants: variants(["49mm", 4380]) },

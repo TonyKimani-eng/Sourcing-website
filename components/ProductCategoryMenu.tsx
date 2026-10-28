@@ -19,7 +19,7 @@ export function ProductCategoryMenu({
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <div className="relative mt-5 inline-block text-left">
+    <div className="relative inline-block text-left">
       <button
         type="button"
         aria-expanded={isOpen}

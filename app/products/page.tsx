@@ -96,9 +96,6 @@ export default function ProductsPage() {
               <h2 className="mt-1 text-2xl font-black text-navy-950 sm:text-3xl">
                 Factory refurbished iPhones, 100% battery
               </h2>
-              <p className="mt-3 max-w-3xl text-sm font-bold leading-6 text-slate-600">
-                Every listed price is calculated from the supplier RMB price at KSh 20 per RMB, plus KSh 5,000 shipping and a lean retail margin.
-              </p>
             </div>
           </div>
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5">

@@ -14,7 +14,6 @@ export type CatalogSection = {
   eyebrow: string;
   description: string;
   kind: "phone" | "watch";
-  image: string;
   products: CatalogProduct[];
 };
 
@@ -50,7 +49,6 @@ export const catalogSections: CatalogSection[] = [
     eyebrow: "Refurbished Android phones",
     description: "Galaxy S, Fold, Flip, Note and A-series stock, priced in Kenya shillings.",
     kind: "phone",
-    image: "/catalog/samsung-pricebook.jpg",
     products: [
       { name: "Galaxy S26 Ultra", variants: variants(["256GB", 5500], ["512GB", 6400]) },
       { name: "Galaxy S26+", variants: variants(["256GB", 4900], ["512GB", 5500]) },
@@ -98,7 +96,6 @@ export const catalogSections: CatalogSection[] = [
     eyebrow: "Refurbished Android phones",
     description: "Clean Pixel choices across the 4A to 10 Pro XL range.",
     kind: "phone",
-    image: "/catalog/google-pixel-pricebook.jpg",
     products: [
       { name: "Pixel 10 Pro XL", variants: variants(["256GB eSIM", 4250]) },
       { name: "Pixel 10", variants: variants(["128GB eSIM", 3150]) },
@@ -125,7 +122,6 @@ export const catalogSections: CatalogSection[] = [
     eyebrow: "Refurbished Android phones",
     description: "Xiaomi flagships, Redmi Note models and POCO performance phones.",
     kind: "phone",
-    image: "/catalog/xiaomi-pricebook.jpg",
     products: [
       { name: "Xiaomi 17 Ultra", variants: variants(["16GB/512GB", 6250], ["12GB/512GB", 5600]) },
       { name: "Xiaomi 17 Pro Max", variants: variants(["16GB/1TB", 5500], ["16GB/512GB", 5000], ["12GB/512GB", 4900]) },
@@ -177,7 +173,6 @@ export const catalogSections: CatalogSection[] = [
     eyebrow: "Smart watches",
     description: "Popular smart-watch sizes and generations. Watch prices are converted to KSh with a modest product margin; phone shipping does not apply.",
     kind: "watch",
-    image: "/catalog/watches-pricebook.jpg",
     products: [
       { name: "Apple Watch Ultra 3 (2025)", variants: variants(["49mm", 4380]) },
       { name: "Apple Watch Ultra 2", variants: variants(["2024 49mm", 3280], ["2023 49mm", 3250]) },

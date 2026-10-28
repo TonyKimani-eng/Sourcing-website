@@ -5,6 +5,7 @@ import { AuthButtons, PurchaseLink } from "@/components/Auth";
 import { Container } from "@/components/Container";
 import { IphoneProductCard } from "@/components/IphoneProductCard";
 import { CatalogSection } from "@/components/CatalogSection";
+import { ProductCategoryMenu } from "@/components/ProductCategoryMenu";
 import { SourcingOrderForm } from "@/components/SourcingOrderForm";
 import { catalogSections } from "@/data/catalog";
 import { assetPath } from "@/data/paths";
@@ -45,15 +46,12 @@ export default function ProductsPage() {
               </span>
             </Link>
             <nav className="hidden flex-1 items-center justify-center gap-2 lg:flex">
-              {productLinks.map((product) => (
-                <a
-                  href={`#${product.id}`}
-                  className="inline-flex min-h-10 items-center rounded-full border border-white/12 px-4 text-sm font-black text-white/82 transition hover:border-gold-400 hover:text-gold-400"
-                  key={product.id}
-                >
-                  {product.label}
-                </a>
-              ))}
+              <a
+                href="#iphones"
+                className="inline-flex min-h-10 items-center rounded-full border border-white/12 px-4 text-sm font-black text-white/82 transition hover:border-gold-400 hover:text-gold-400"
+              >
+                Catalog
+              </a>
               <a
                 href="#sourcing-order"
                 className="inline-flex min-h-10 items-center rounded-full border border-white/12 px-4 text-sm font-black text-white/82 transition hover:border-gold-400 hover:text-gold-400"
@@ -85,28 +83,6 @@ export default function ProductsPage() {
         </Container>
       </section>
 
-      <section className="border-b border-slate-200 bg-white py-4">
-        <Container>
-          <div className="flex gap-2 overflow-x-auto pb-1">
-              {productLinks.map((product) => (
-                <a
-                  href={`#${product.id}`}
-                  className="inline-flex min-h-11 shrink-0 items-center rounded-full border border-slate-200 bg-[#f8fbff] px-5 text-sm font-black text-navy-950 transition hover:border-ember-500 hover:bg-ember-500 hover:text-white"
-                  key={product.id}
-                >
-                  {product.label}
-                </a>
-              ))}
-              <a
-                href="#sourcing-order"
-                className="inline-flex min-h-11 shrink-0 items-center rounded-full border border-slate-200 bg-[#f8fbff] px-5 text-sm font-black text-navy-950 transition hover:border-ember-500 hover:bg-ember-500 hover:text-white"
-              >
-                Sourcing order
-              </a>
-          </div>
-        </Container>
-      </section>
-
       <section id="iphones" className="scroll-mt-24 bg-[#f8fbff] py-8 sm:py-12">
         <Container>
           <div className="mb-5 border-l-4 border-ember-500 pl-4">
@@ -118,6 +94,7 @@ export default function ProductsPage() {
               <p className="mt-3 max-w-3xl text-sm font-bold leading-6 text-slate-600">
                 Every listed price is calculated from the supplier RMB price at KSh 20 per RMB, plus KSh 5,000 shipping and a lean retail margin.
               </p>
+              <ProductCategoryMenu categories={productLinks} />
             </div>
           </div>
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5">

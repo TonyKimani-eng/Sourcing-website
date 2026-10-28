@@ -14,7 +14,7 @@ type IphoneProductCardProps = {
   product: {
     name: string;
     brand: string;
-    image: string;
+    image?: string;
     storageOptions: StorageOption[];
     colorOptions?: string[];
   };
@@ -25,20 +25,31 @@ function formatKes(price: number) {
 }
 
 function formatStorage(storage: string) {
-  return storage.toUpperCase().endsWith("T") ? storage.toUpperCase() : `${storage}GB`;
+  const normalized = storage.toUpperCase();
+  return /GB|TB|MM|\//.test(normalized) ? normalized : normalized.endsWith("T") ? normalized : `${normalized}GB`;
 }
 
-function ProductPhoto({ src, alt }: { src: string; alt: string }) {
+function ProductPhoto({ src, alt, name }: { src?: string; alt: string; name: string }) {
   return (
     <div className="relative h-56 overflow-hidden rounded-lg bg-slate-100">
-      <Image
-        src={assetPath(src)}
-        alt={alt}
-        fill
-        sizes="(min-width: 1280px) 20vw, (min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw"
-        className="object-cover transition duration-300 group-hover:scale-105"
-      />
-      <div className="absolute inset-0 bg-gradient-to-t from-navy-950/25 via-transparent to-transparent" />
+      {src ? (
+        <>
+          <Image
+            src={assetPath(src)}
+            alt={alt}
+            fill
+            sizes="(min-width: 1280px) 20vw, (min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw"
+            className="object-cover transition duration-300 group-hover:scale-105"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-navy-950/25 via-transparent to-transparent" />
+        </>
+      ) : (
+        <div className="flex h-full flex-col items-center justify-center bg-[linear-gradient(135deg,#e8f4f5,#f8fbff)] px-6 text-center">
+          <span className="flex h-16 w-12 items-center justify-center rounded-xl border-4 border-teal-600/35 bg-white text-2xl text-teal-600">+</span>
+          <span className="mt-3 text-xs font-black uppercase tracking-[0.16em] text-teal-700">Photo coming soon</span>
+          <span className="mt-1 line-clamp-2 text-sm font-bold text-navy-950">{name}</span>
+        </div>
+      )}
     </div>
   );
 }
@@ -59,7 +70,7 @@ export function IphoneProductCard({ product }: IphoneProductCardProps) {
 
   return (
     <article className="group flex min-w-0 flex-col overflow-hidden rounded-lg border border-slate-100 bg-white shadow-soft transition hover:-translate-y-1 hover:border-ember-500/30">
-      <ProductPhoto src={product.image} alt={`${product.name} product photo`} />
+      <ProductPhoto src={product.image} alt={`${product.name} product photo`} name={product.name} />
       <div className="flex flex-1 flex-col p-5">
         <p className="text-xs font-black uppercase text-teal-600">{product.brand}</p>
         <h3 className="mt-2 min-h-14 text-xl font-black leading-tight text-navy-950">

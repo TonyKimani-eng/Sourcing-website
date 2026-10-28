@@ -46,12 +46,10 @@ export default function ProductsPage() {
               </span>
             </Link>
             <nav className="hidden flex-1 items-center justify-center gap-2 lg:flex">
-              <a
-                href="#iphones"
-                className="inline-flex min-h-10 items-center rounded-full border border-white/12 px-4 text-sm font-black text-white/82 transition hover:border-gold-400 hover:text-gold-400"
-              >
-                Catalog
-              </a>
+              <ProductCategoryMenu
+                categories={productLinks}
+                buttonClassName="border-white/12 bg-transparent text-white/82 shadow-none hover:border-gold-400 hover:text-gold-400"
+              />
               <a
                 href="#sourcing-order"
                 className="inline-flex min-h-10 items-center rounded-full border border-white/12 px-4 text-sm font-black text-white/82 transition hover:border-gold-400 hover:text-gold-400"
@@ -60,6 +58,13 @@ export default function ProductsPage() {
               </a>
             </nav>
             <div className="flex shrink-0 items-center gap-2">
+              <div className="lg:hidden">
+                <ProductCategoryMenu
+                  categories={productLinks}
+                  label="Browse"
+                  buttonClassName="border-white/12 bg-transparent text-white/82 shadow-none hover:border-gold-400 hover:text-gold-400"
+                />
+              </div>
               <Link href="/" className="hidden text-sm font-black text-white/70 transition hover:text-gold-400 sm:inline">
                 Home
               </Link>
@@ -94,7 +99,6 @@ export default function ProductsPage() {
               <p className="mt-3 max-w-3xl text-sm font-bold leading-6 text-slate-600">
                 Every listed price is calculated from the supplier RMB price at KSh 20 per RMB, plus KSh 5,000 shipping and a lean retail margin.
               </p>
-              <ProductCategoryMenu categories={productLinks} />
             </div>
           </div>
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5">

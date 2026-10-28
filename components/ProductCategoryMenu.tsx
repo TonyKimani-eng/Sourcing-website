@@ -7,7 +7,15 @@ type Category = {
   label: string;
 };
 
-export function ProductCategoryMenu({ categories }: { categories: Category[] }) {
+export function ProductCategoryMenu({
+  categories,
+  label = "Browse catalog",
+  buttonClassName = ""
+}: {
+  categories: Category[];
+  label?: string;
+  buttonClassName?: string;
+}) {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -17,15 +25,15 @@ export function ProductCategoryMenu({ categories }: { categories: Category[] }) 
         aria-expanded={isOpen}
         aria-haspopup="menu"
         onClick={() => setIsOpen((open) => !open)}
-        className="inline-flex min-h-11 items-center gap-3 rounded-full border border-navy-950 bg-white px-5 text-sm font-black text-navy-950 shadow-sm transition hover:border-ember-500 hover:text-ember-500"
+        className={`inline-flex min-h-10 items-center gap-2 rounded-full border border-navy-950 bg-white px-4 text-sm font-black text-navy-950 shadow-sm transition hover:border-ember-500 hover:text-ember-500 ${buttonClassName}`}
       >
-        Browse product categories
+        {label}
         <svg viewBox="0 0 20 20" aria-hidden="true" className={`h-4 w-4 transition ${isOpen ? "rotate-180" : ""}`} fill="none" stroke="currentColor" strokeWidth="2">
           <path d="m5 7 5 5 5-5" />
         </svg>
       </button>
       {isOpen ? (
-        <div role="menu" className="absolute left-0 z-20 mt-2 w-72 overflow-hidden rounded-lg border border-slate-200 bg-white p-2 shadow-xl">
+        <div role="menu" className="absolute right-0 z-20 mt-2 w-72 overflow-hidden rounded-lg border border-slate-200 bg-white p-2 shadow-xl">
           {categories.map((category) => (
             <button
               key={category.id}
